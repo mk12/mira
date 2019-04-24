@@ -1,0 +1,13 @@
+# General
+*.log
+
+# Python
+__pycache__/
+*.pyo
+*.pyc
+
+# Postgres
+database/
+
+# Flask
+instance/

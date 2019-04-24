@@ -12,13 +12,17 @@ Features:
 
 The web front end is served by GitHub Pages at https://mk12.github.io/mira/.
 
-The code lives in the `gh-pages` orphan branch. It is a simple web app that uses jQuery and [Fabric.js](http://fabricjs.com).
+The code lives in the `docs` directory (it's not documentation, that's just the name GitHub requires). It uses jQuery and [Fabric.js](http://fabricjs.com).
+
+For development, just open [index.html](docs/index.html) in your browser.
 
 ## Back end
 
 The back end is served by Heroku.
 
-The code lives in the `master` branch. It is a simple [Flask](http://flask.pocoo.org) app written in Python 3.
+The code lives in the `master` branch. It uses Python 3, [Flask](http://flask.pocoo.org), and PostgreSQL.
+
+For development, use [install_deps.sh](install_deps.sh) and [run.sh](run.sh).
 
 ## License
 

@@ -19,17 +19,21 @@ $(document).ready(function() {
     if (confirm("Are you sure you want to erase everything?")) {
       clearCanvas();
     }
+    return false;
   });
   $("#Snapshot").click(function() {
     alert("Not implemented yet");
+    return false;
   });
   $("#History").click(function() {
     alert("Not implemented yet");
+    return false;
   });
   $("#SignOut").click(function() {
     $("#Canvas").fadeOut(500, function() {
       $(".center").empty();
     });
     $.removeCookie("token");
+    return false;
   });
 });
