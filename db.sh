@@ -73,7 +73,12 @@ create_db() {
         say "Note: config file $config_path already exists"
     else
         say "Creating config file $config_path"
-        echo -e "DB_USER = '$(whoami)'\nDB_PASSWORD = ''" > "$config_path"
+        secret=$(python3 -c "import os; print(os.urandom(16).hex())")
+        cat <<EOS > "$config_path"
+DB_USER = '$(whoami)'
+DB_PASSWORD = ''
+SECRET_KEY = '$secret'
+EOS
     fi
     say "Running $py_init_db"
     if ! run python3 "$py_init_db"; then

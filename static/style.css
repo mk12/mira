@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css?family=Dancing+Script');
+
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background: #f2fbff;
+    font: 20px "Dancing Script", serif;
+}
+
+a {
+    color: inherit;
+    text-decoration: inherit;
+}
+
+a:hover {
+    color: #aaa;
+}
+
+.error {
+    color: #f77;
+}
+
+.success {
+    color: #40bc61;
+}
+
+input[type=text].error, input[type=password].error {
+    border-color: #f77;
+    color: inherit;
+}
+
+.wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.main {
+    padding: 0;
+    background: #fcfaed;
+    border-image: url('border.png') 412 / 103px / 14px round;
+    width: 500px;
+    height: 500px;
+    min-height: 500px;
+}
+
+.text {
+    text-align: center;
+    padding: 75px;
+}
+
+.multiline {
+    line-height: 1.5;
+}
+
+.form-group {
+    margin: 2px 0;
+}
+
+label {
+    display: inline-block;
+    width: 78px;
+    text-align: right;
+    margin: 0; 
+    padding: 0 5px 0 0;
+}
+
+input[type=text], input[type=password] {
+    border: 1px solid #000;
+    padding: 2px;
+    font-size: 12px;
+}
+
+input[type=submit] {
+    width: 80px;
+    font: 20px "Dancing Script", serif;
+    background: #fff;
+    border: 1px solid #000;
+    border-radius: 5px;
+}
+
+input[type=submit]:hover {
+    background: #fcfcfc;
+    border-color: #005cb7;
+    color: #005cb7;
+}
+
+.banner {
+    padding: 25px 0;
+    min-height: 25px;
+}
+
+.toolbox {
+    display: flex;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity .5s ease-in-out;
+}
+
+.toolbox:hover {
+    opacity: 1;
+}
+
+.toolbox a {
+    padding: 0 20px;
+}

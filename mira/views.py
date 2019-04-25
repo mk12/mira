@@ -1,43 +1,51 @@
 """This module defines the Flask views (routes) for the server."""
 
-from flask import abort, jsonify, request
+from flask import jsonify, request, render_template, send_file
+from flask_login import current_user, login_user, logout_user, login_required
+from werkzeug.exceptions import HTTPException
 
 from mira import app
-from mira.arguments import get_int
-from mira.crud_helpers import (
-    create,
-    delete,
-    get,
-    paginate,
-    update,
-)
-from mira.database import db
-from mira.models import *
+from mira.arguments import get_fields
+from mira.models import User
 
 
-@app.errorhandler(404)
-def page_not_found(e):
-    return jsonify(error=404, message=str(e)), 404
+@app.errorhandler(HTTPException)
+def http_error(ex):
+    if request.path.startswith("/api"):
+        return jsonify(error=ex.code, message=str(ex)), ex.code
+    content = {"heading": f"{ex.code} {ex.name}", "message": ex.description}
+    return render_template("error.html", **content), ex.code
 
 
 @app.route("/")
 def index():
-    return "Hello World!"
+    return send_file("static/index.html")
 
 
-@app.route("/users", methods=["GET", "POST"])
-def users():
-    if request.method == "GET":
-        return paginate(User, "created_at")
-    elif request.method == "POST":
-        return create(User, ["email", "name"])
+@app.login_manager.user_loader
+def load_user(user_id):
+    return User.query.filter_by(login_id=user_id).first()
 
 
-@app.route("/users/<int:id>", methods=["GET", "PUT", "DELETE"])
-def users_id(id):
-    if request.method == "GET":
-        return get(User, id)
-    elif request.method == "PUT":
-        return update(User, id, ["email", "name"])
-    elif request.method == "DELETE":
-        return delete(User, id)
+@app.route("/api/login", methods=["POST"])
+def login():
+    username, password = get_fields("username", "password")
+    user = User.query.filter_by(username=username).first()
+    if not user or not user.check_password(password):
+        return "Login failed", 401
+    login_user(user, remember=True)
+    user = current_user
+    assert user.is_authenticated
+    return jsonify(username=user.username, color=user.color)
+
+
+@app.route("/api/logout", methods=["POST"])
+@login_required
+def logout():
+    logout_user()
+
+
+@app.route("/api/ping", methods=["POST"])
+@login_required
+def ping():
+    return "pong"

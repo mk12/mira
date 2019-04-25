@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -xeufo pipefail
+set -eufo pipefail
 
 prog=$(basename "$0")
 
