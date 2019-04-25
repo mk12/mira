@@ -17,7 +17,6 @@ var canvas = null;
 function postTo(server, path, data) {
   return $.ajax({
     type: "POST",
-    xhrFields: {withCredentials: true},
     url: server + path,
     data: JSON.stringify(data),
     contentType: "application/json; charset=utf-8"
