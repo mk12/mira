@@ -1,0 +1,41 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="banner"></div>
+    <div id="Main" class="main">
+        <div id="LoginView" class="text" hidden>
+            <p>Welcome to Mira.</p>
+            <p>It looks like this is your first time.</p>
+            <p>Let us begin by authenticating.</p>
+            <form id="LoginForm">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" name="username" size="20">
+                </div>
+                <div class="form-group">
+                    <label for="password">Password:</label>
+                    <input type="password" name="password" size="20">
+                </div>
+                <div class="form-group" style="margin-top: 20px;">
+                    <input type="submit" value="Connect">
+                </div>
+                <div class="form-group" style="margin-top: 15px;">
+                    <span id="LoginMessage"></span>
+                </div>
+            </form>
+        </div>
+        <div id="CanvasView" hidden></div>
+    </div>
+    <div id="Toolbox" class="banner toolbox" style="visibility: hidden;">
+        <a id="Clear" href="#">Clear</a>
+        <a id="Snapshot" href="#">Snapshot</a>
+        <a id="History" href="#">History</a>
+        <a id="SignOut" href="#">Sign out</a>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/2.7.0/fabric.min.js"></script>
+    <script src="/static/script.js"></script>
+{% endblock %}

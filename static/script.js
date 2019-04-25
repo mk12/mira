@@ -1,6 +1,6 @@
 // Constants
 var UI_FADE_TIME = 500;
-var TEXT_FADE_TIME = 200;//1000;
+var TOOLBOX_SHOW_TIME = 3000;
 var CANVAS_HTML = "<canvas id='Canvas' width='500' height='500'></canvas>";
 
 // Globals
@@ -10,66 +10,30 @@ var $loginView = $("#LoginView");
 var $loginForm = $("#LoginForm");
 var $loginMessage = $("#LoginMessage");
 var $toolbox = $("#Toolbox");
-var clientState = null;
+var userInfo = null;
 var canvas = null;
 
-// Makes a POST request to the given server.
-function postTo(server, path, data) {
+// Makes a request to the server with a JSON body.
+function request(type, path, data) {
   return $.ajax({
-    type: "POST",
-    url: server + path,
+    type: type,
+    url: window.location.protocol + "//" + window.location.host + path,
     data: JSON.stringify(data),
     contentType: "application/json; charset=utf-8"
   });
 }
 
-// Makes a POST request to the remembered server.
-function post(path, data) {
-  return postTo(clientState["server"], path, data);
-}
-
-// Attempts to log in using arguments or cookies. Returns a promise.
-function login(server, response) {
-  var dfd = $.Deferred();
-  var newLogin = server !== undefined;
-  if (newLogin) {
-    // Set client state from the login response.
-    clientState = {
-      server: server,
-      color: response["color"]
-    };
-    // On success, we will persist the state to a cookie.
-    dfd.then(function() {
-      Cookies.setJSON("clientState", clientState);
-    });
-  } else {
-    // Read the client state from the cookie.
-    var cookie = Cookies.getJSON("clientState");
-    if (cookie === undefined) {
-      return dfd.reject().promise();
-    }
-    clientState = cookie;
-  }
-  if (clientState["server"] === undefined) {
-    return dfd.reject().promise();
-  }
-  // Make sure authentication is working.
-  post("/api/ping").done(function(data) {
-    if (data == "pong") {
-      dfd.resolve();
-    } else {
-      dfd.reject();
-    }
-  }).fail(function() {
-    dfd.reject();
+// Attempts to log in with the remembered session.
+function autoLogin() {
+  return request("GET", "/api/user").done(function(response) {
+    userInfo = response;
   });
-  return dfd.promise();
 }
 
-// Clears all login data.
+// Clears the login data.
 function logout() {
-  Cookies.remove("clientState");
-  clientState = null;
+  userInfo = null;
+  return request("POST", "/api/logout");
 }
 
 // Connects the canvas to the server.
@@ -105,7 +69,7 @@ function showLoginView() {
     if (next === undefined) {
       dfd.resolve();
     } else {
-      $(next).fadeIn(TEXT_FADE_TIME, revealNext);
+      $(next).fadeIn(UI_FADE_TIME, revealNext);
     }
   }
   revealNext();
@@ -114,20 +78,19 @@ function showLoginView() {
 
 // Fades out the login form.
 function hideLoginView() {
-  if ($loginView.css("display") === "none") {
-    return $.Deferred().resolve().promise();
-  }
   return $loginView.fadeOut(UI_FADE_TIME);
 }
 
 // Fades in the canvas view and toolbox.
 function showCanvasView() {
-  if ($canvasView.css("display") === "none") {
-    return $.Deferred().resolve().promise();
-  }
   return $.when(
     $canvasView.fadeIn(UI_FADE_TIME),
-    $toolbox.css({visibility: "visible", opacity: 0}).fadeTo(1, UI_FADE_TIME)
+    $toolbox.css({visibility: "visible", opacity: 0})
+      .fadeTo(UI_FADE_TIME, 1)
+      .delay(TOOLBOX_SHOW_TIME)
+      .fadeTo(UI_FADE_TIME, 0, function() {
+        $toolbox.css("opacity", "");
+      })
   );
 }
 
@@ -135,7 +98,7 @@ function showCanvasView() {
 function hideCanvasView() {
   return $.when(
     $canvasView.fadeOut(UI_FADE_TIME),
-    $toolbox.fadeTo(0, UI_FADE_TIME, function() {
+    $toolbox.fadeTo(UI_FADE_TIME, 0, function() {
       $toolbox.css("visibility", "hidden");
     })
   );
@@ -146,27 +109,18 @@ function mainLoop() {
   // TODO
 }
 
-// Normalizes a URL by prefixing https:// and removing trailing slashes.
-function normalizeUrl(url) {
-  url = url.replace(/\/+$/, "");
-  if (!/^https?:\/\//i.test(url)) {
-    url = "https://" + url;
-  }
-  return url;
-}
-
 $loginForm.submit(function() {
+  // Fades in a message underneath the form.
   function show(kind, text) {
     return $loginMessage.hide().removeClass().addClass(kind).text(text)
-      .fadeIn(TEXT_FADE_TIME).promise();
+      .fadeIn(UI_FADE_TIME).promise();
   }
 
   // Make sure all fields are present.
   $loginForm.find("input").removeClass("error");
-  var fields = ["server", "username", "password"];
   var values = {}
   var ok = true;
-  $.each(fields, function(index, field) {
+  $.each(["username", "password"], function(index, field) {
     var $input = $loginForm.find('input[name="' + field + '"]');
     values[field] = $input.val();
     if (!values[field]) {
@@ -181,21 +135,9 @@ $loginForm.submit(function() {
     return false;
   }
 
-  // Attempt to connect.
+  // Attempt to log in to the server.
   var status = show("", "Connecting ...");
-  var server = normalizeUrl(values["server"]);
-  postTo(server, "/api/login", {
-    username: values["username"],
-    password: values["password"]
-  }).done(function(response) {
-    status.done(function() {
-      login(server, response).then(function() {
-        show("success", "Success!").done(hideLoginView).done(connect);
-      }).fail(function() {
-        show("error", "Unexpected server error.");
-      });
-    });
-  }).fail(function(xhr) {
+  request("POST", "/api/login", values).fail(function(xhr) {
     status.done(function() {
       if (xhr.readyState !== 4) {
         show("error", "Could not connect to sever.");
@@ -204,6 +146,12 @@ $loginForm.submit(function() {
       } else {
         show("error", "Unexpected error (" + xhr.status + ").");
       }
+    });
+  }).done(function() {
+    status.then(autoLogin).fail(function() {
+      show("error", "Unexpected server error.");
+    }).done(function() {
+      show("success", "Success!").then(hideLoginView).done(connect);
     });
   });
   return false;
@@ -232,4 +180,4 @@ $("#SignOut").click(function() {
   return false;
 });
 
-login().done(connect).fail(showLoginView);
+autoLogin().done(connect).fail(showLoginView);

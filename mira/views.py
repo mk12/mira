@@ -11,7 +11,7 @@ from mira.models import User
 
 @app.errorhandler(HTTPException)
 def http_error(ex):
-    if request.path.startswith("/api"):
+    if request.path.startswith("/api/"):
         return jsonify(error=ex.code, message=str(ex)), ex.code
     content = {"heading": f"{ex.code} {ex.name}", "message": ex.description}
     return render_template("error.html", **content), ex.code
@@ -19,7 +19,7 @@ def http_error(ex):
 
 @app.route("/")
 def index():
-    return send_file("static/index.html")
+    return render_template("index.html")
 
 
 @app.login_manager.user_loader
@@ -36,16 +36,18 @@ def login():
     login_user(user, remember=True)
     user = current_user
     assert user.is_authenticated
-    return jsonify(username=user.username, color=user.color)
+    return "Logged in"
 
 
 @app.route("/api/logout", methods=["POST"])
 @login_required
 def logout():
     logout_user()
+    return "Logged out"
 
 
-@app.route("/api/ping", methods=["POST"])
+@app.route("/api/user")
 @login_required
 def ping():
-    return "pong"
+    user = current_user
+    return jsonify(username=user.username, color=user.color)

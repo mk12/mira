@@ -8,6 +8,8 @@ Features:
 - Canvas contents slowly fade over the course of hours.
 - Optionally keep a history of snapshots.
 
+## Development
+
 ## Front end
 
 The web front end is served by GitHub Pages at https://mk12.github.io/mira/.
