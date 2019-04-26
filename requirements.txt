@@ -1,6 +1,0 @@
-Flask ~= 1.0
-Flask-Login ~= 0.4
-Flask-SQLAlchemy ~= 2.4
-SQLAlchemy ~= 1.3
-gunicorn ~= 19.9
-psycopg2 ~= 2.8

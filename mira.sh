@@ -29,7 +29,7 @@ run() {
     if [[ "$verbose" == 1 ]]; then
         "$@"
     else
-        "$@" &> /dev/null
+        "$@" > /dev/null 2>&1
     fi
 }
 
@@ -39,6 +39,7 @@ usage: $prog [-hpv] [-b PORT] [COMMAND]
 
 commands:
     run        start the server (default)
+    deps       install dependencies (macOS only)
     db:create  create the database
     db:drop    delete the database
     db:start   start postgres
@@ -74,6 +75,27 @@ run_server() {
     else
         FLASK_APP="$app" FLASK_ENV="$env" python3 -m flask run -p "$port"
     fi
+}
+
+install_deps() {
+    if [[ "$(uname -s)" != "Darwin" ]]; then
+        die "only works on macOS"
+    fi
+    if ! run command -v brew; then
+        die "brew not found (install it from https://brew.sh)"
+    fi
+
+    say "Installing Homebrew dependencies"
+    for p in python3 pipenv postgresql; do
+        if run brew list --versions "$p"; then
+            say "$p already installed"
+        elif ! brew install "$p"; then
+            die "failed to install $p"
+        fi
+    done
+
+    say "Installing Python dependencies"
+    pipenv install
 }
 
 pg_running() {
@@ -151,6 +173,7 @@ psql_db() {
 main() {
     case $cmd in
         run) run_server ;;
+        deps) install_deps ;;
         db:create) create_db ;;
         db:drop) drop_db ;;
         db:start) start_db ;;
