@@ -2,8 +2,10 @@
 var UI_FADE_TIME = 500;
 var MESSAGE_SHOW_TIME = 1000;
 var TOOLBAR_SHOW_TIME = 3000;
+var IDLE_SYNC_TIME = 1000;//5000;
+var PERIODIC_SYNC_TIME = 5000;//30000;
 var CANVAS_HTML = "<canvas id='Canvas' width='500' height='500'></canvas>";
-var TOOLS = ["Brush", "Eraser", "Text"];
+var TOOLS = ["Brush", "Text"];
 var MIN_BRUSH_SIZE = 4;
 var MAX_BRUSH_SIZE = 16;
 var BRUSH_SIZE_INC = 2;
@@ -18,6 +20,8 @@ var $loginMessage = $("#LoginMessage");
 var $toolbar = $("#Toolbar");
 var userInfo = null;
 var canvas = null;
+var syncTimeout = null;
+var idleTimeout = null;
 var toolIndex = 0;
 var brushSize = 4;
 
@@ -118,24 +122,55 @@ function connect() {
   canvas = new fabric.Canvas("Canvas", {isDrawingMode: true});
   canvas.freeDrawingBrush.color = "#ff0000";
   canvas.freeDrawingBrush.width = brushSize;
-  // connect to server and get first image
-  // start main loop
-  return showCanvasView();
+  canvas.on("path:created", resetIdleTimeout);
+  canvas.on("text:changed", resetIdleTimeout);
+  // more events
+  var promise = showCanvasView();
+  syncFor("initial")();
+  return promise;
 }
 
 // Disconnects the canvas from the server.
 function disconnect() {
+  clearTimeouts();
   canvas = null;
   return hideCanvasView().done(function() {
     $canvasView.empty();
-    // stop main loop
   });
 }
 
-// Syncs the canvas with the server.
-function mainLoop() {
-  // TODO
+// Clear all timeouts.
+function clearTimeouts() {
+  clearTimeout(idleTimeout);
+  clearTimeout(syncTimeout);
 }
+
+// Reset the idle timeout to start counting from now.
+function resetIdleTimeout() {
+  clearTimeouts();
+  idleTimeout = setTimeout(syncFor("idle"), IDLE_SYNC_TIME);
+}
+
+// Helper. TODO remove this.
+function syncFor(cause) {
+  return function() { sync(cause); }
+}
+
+// Sync the canvas state with the server.
+function sync(cause) {
+  showMessage("Syncing: " + cause);
+  syncTimeout = setTimeout(syncFor("refresh"), PERIODIC_SYNC_TIME);
+}
+
+// Make sure we only sync when the window is in focus.
+$(window).focus(function() {
+  clearTimeouts();
+  if (canvas !== null) {
+    syncFor("focus")();
+  }
+}).blur(function() {
+  clearTimeouts();
+});
 
 $loginForm.submit(function() {
   // Fades in a message underneath the form.
