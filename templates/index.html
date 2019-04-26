@@ -3,7 +3,10 @@
 {% block content %}
     <div class="banner"></div>
     <div id="Main" class="main">
-        <div id="LoginView" class="text" hidden>
+        <div class="middle-bar">
+            <span id="Message" class="overlay" style="display: none;"></span>
+        </div>
+        <div id="LoginView" class="text" style="display: none;">
             <p>Welcome to Mira.</p>
             <p>It looks like this is your first time.</p>
             <p>Let us begin by authenticating.</p>
@@ -24,10 +27,10 @@
                 </div>
             </form>
         </div>
-        <div id="CanvasView" hidden></div>
+        <div id="CanvasView" style="display: none;"></div>
     </div>
-    <div id="Toolbox" class="banner toolbox" style="visibility: hidden;">
-        <a id="Clear" href="#">Clear</a>
+    <div id="Toolbar" class="banner toolbar" style="visibility: hidden;">
+        <a id="CurrentTool" href="#" style="min-width: 45px;">Brush</a>
         <a id="Snapshot" href="#">Snapshot</a>
         <a id="History" href="#">History</a>
         <a id="SignOut" href="#">Sign out</a>

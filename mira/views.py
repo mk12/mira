@@ -48,6 +48,18 @@ def logout():
 
 @app.route("/api/user")
 @login_required
-def ping():
+def user_info():
     user = current_user
     return jsonify(username=user.username, color=user.color)
+
+
+@app.route("/api/sync", methods=["POST"])
+@login_required
+def sync():
+    pass
+
+
+@app.route("/api/history")
+@login_required
+def history():
+    pass

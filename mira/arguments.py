@@ -16,7 +16,7 @@ def get_fields(*keys):
     for f in keys:
         if f not in json:
             abort(400, f"Missing required key: {f}")
-    for key, val in json.items():
+    for key in json.keys():
         if key not in keys:
             abort(400, f"Unexpected key: {f}")
     return [json[f] for f in keys]

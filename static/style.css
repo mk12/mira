@@ -47,6 +47,23 @@ input[type=text].error, input[type=password].error {
     width: 500px;
     height: 500px;
     min-height: 500px;
+    position: relative;
+}
+
+.middle-bar {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1;
+    text-align: center;
+}
+
+.overlay {
+    padding: 10px;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 .text {
@@ -95,17 +112,22 @@ input[type=submit]:hover {
     min-height: 25px;
 }
 
-.toolbox {
+.transition-opacity {
+    /* https://stackoverflow.com/questions/9245030 */
+    transition: opacity .5s cubic-bezier(.02, .01, .47, 1); 
+}
+
+.toolbar {
     display: flex;
     justify-content: center;
     opacity: 0;
-    transition: opacity .5s ease-in-out;
+    text-align: center;
 }
 
-.toolbox:hover {
+.toolbar:hover {
     opacity: 1;
 }
 
-.toolbox a {
+.toolbar a {
     padding: 0 20px;
 }

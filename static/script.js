@@ -1,17 +1,25 @@
 // Constants
 var UI_FADE_TIME = 500;
-var TOOLBOX_SHOW_TIME = 3000;
+var MESSAGE_SHOW_TIME = 1000;
+var TOOLBAR_SHOW_TIME = 3000;
 var CANVAS_HTML = "<canvas id='Canvas' width='500' height='500'></canvas>";
+var TOOLS = ["Brush", "Eraser", "Text"];
+var MIN_BRUSH_SIZE = 4;
+var MAX_BRUSH_SIZE = 16;
+var BRUSH_SIZE_INC = 2;
 
 // Globals
 var $main = $("#Main");
+var $message = $("#Message");
 var $canvasView = $("#CanvasView");
 var $loginView = $("#LoginView");
 var $loginForm = $("#LoginForm");
 var $loginMessage = $("#LoginMessage");
-var $toolbox = $("#Toolbox");
+var $toolbar = $("#Toolbar");
 var userInfo = null;
 var canvas = null;
+var toolIndex = 0;
+var brushSize = 4;
 
 // Makes a request to the server with a JSON body.
 function request(type, path, data) {
@@ -36,32 +44,22 @@ function logout() {
   return request("POST", "/api/logout");
 }
 
-// Connects the canvas to the server.
-function connect() {
-  $canvasView.empty().hide().append(CANVAS_HTML);
-  canvas = new fabric.Canvas("Canvas", {isDrawingMode: true});
-  canvas.freeDrawingBrush.color = "#ff0000";
-  canvas.freeDrawingBrush.width = 10;
-  // connect to server and get first image
-  // start main loop
-  return showCanvasView();
-}
-
-// Disconnects the canvas from the server.
-function disconnect() {
-  return hideCanvasView().done(function() {
-    $canvasView.empty();
-    // stop main loop
-  });
+// Shows a message temporarily in the middle of the view.
+function showMessage(message) {
+  return $message.finish().hide()
+    .text(message)
+    .fadeTo(UI_FADE_TIME, 1)
+    .delay(MESSAGE_SHOW_TIME)
+    .fadeOut(UI_FADE_TIME).promise();
 }
 
 // Fades in the login form.
 function showLoginView() {
   var $children = $loginView.children();
-  $loginMessage.hide();
+  $loginMessage.finish().hide();
+  $children.finish().hide();
+  $loginView.finish().show();
   // Fade in the children one by one.
-  $children.hide();
-  $loginView.show();
   var children = $children.toArray();
   var dfd = $.Deferred();
   function revealNext() {
@@ -69,7 +67,7 @@ function showLoginView() {
     if (next === undefined) {
       dfd.resolve();
     } else {
-      $(next).fadeIn(UI_FADE_TIME, revealNext);
+      $(next).fadeTo(UI_FADE_TIME, 1, revealNext);
     }
   }
   revealNext();
@@ -78,30 +76,60 @@ function showLoginView() {
 
 // Fades out the login form.
 function hideLoginView() {
-  return $loginView.fadeOut(UI_FADE_TIME);
+  return $loginView.finish().fadeOut(UI_FADE_TIME).promise();
 }
 
-// Fades in the canvas view and toolbox.
+// Fades in the canvas view and toolbar.
 function showCanvasView() {
   return $.when(
-    $canvasView.fadeIn(UI_FADE_TIME),
-    $toolbox.css({visibility: "visible", opacity: 0})
+    $canvasView.finish().fadeTo(UI_FADE_TIME, 1),
+    $toolbar.finish()
+      .removeClass("transition-opacity")
+      .css({visibility: "visible", opacity: 0})
       .fadeTo(UI_FADE_TIME, 1)
-      .delay(TOOLBOX_SHOW_TIME)
-      .fadeTo(UI_FADE_TIME, 0, function() {
-        $toolbox.css("opacity", "");
+      .delay(TOOLBAR_SHOW_TIME)
+      .promise().done(function() {
+        var restore = function() {
+          $toolbar.css("opacity", "").addClass("transition-opacity");
+        };
+        if ($("body").find("#Toolbar:hover").length) {
+          restore();
+        } else {
+          $toolbar.fadeTo(UI_FADE_TIME, 0, restore);
+        }
       })
   );
 }
 
-// Fades out the canvas view and toolbox.
+// Fades out the canvas view and toolbar.
 function hideCanvasView() {
   return $.when(
-    $canvasView.fadeOut(UI_FADE_TIME),
-    $toolbox.fadeTo(UI_FADE_TIME, 0, function() {
-      $toolbox.css("visibility", "hidden");
-    })
+    $canvasView.finish().fadeOut(UI_FADE_TIME),
+    $toolbar.finish().removeClass("transition-opacity")
+      .fadeTo(UI_FADE_TIME, 0, function() {
+        $toolbar.css("visibility", "hidden");
+      })
   );
+}
+
+// Connects the canvas to the server.
+function connect() {
+  $canvasView.empty().hide().append(CANVAS_HTML);
+  canvas = new fabric.Canvas("Canvas", {isDrawingMode: true});
+  canvas.freeDrawingBrush.color = "#ff0000";
+  canvas.freeDrawingBrush.width = brushSize;
+  // connect to server and get first image
+  // start main loop
+  return showCanvasView();
+}
+
+// Disconnects the canvas from the server.
+function disconnect() {
+  canvas = null;
+  return hideCanvasView().done(function() {
+    $canvasView.empty();
+    // stop main loop
+  });
 }
 
 // Syncs the canvas with the server.
@@ -112,8 +140,9 @@ function mainLoop() {
 $loginForm.submit(function() {
   // Fades in a message underneath the form.
   function show(kind, text) {
-    return $loginMessage.hide().removeClass().addClass(kind).text(text)
-      .fadeIn(UI_FADE_TIME).promise();
+    return $loginMessage.finish()
+      .hide().removeClass().addClass(kind).text(text)
+      .fadeTo(UI_FADE_TIME, 1).promise();
   }
 
   // Make sure all fields are present.
@@ -151,16 +180,20 @@ $loginForm.submit(function() {
     status.then(autoLogin).fail(function() {
       show("error", "Unexpected server error.");
     }).done(function() {
-      show("success", "Success!").then(hideLoginView).done(connect);
+      show("success", "Success!").then(hideLoginView).done(function() {
+        // Don't leave the password in the DOM.
+        $loginForm.trigger("reset");
+        connect();
+      });
     });
   });
   return false;
 });
 
-$("#Clear").click(function() {
-  if (confirm("Are you sure you want to erase everything?")) {
-    clearCanvas();
-  }
+$("#CurrentTool").click(function() {
+  toolIndex = (toolIndex + 1) % TOOLS.length;
+  $(this).finish().css("opacity", 0).text(TOOLS[toolIndex])
+    .fadeTo(UI_FADE_TIME, 1);
   return false;
 });
 
@@ -176,8 +209,21 @@ $("#History").click(function() {
 
 $("#SignOut").click(function() {
   logout();
-  disconnect().done(showLoginView);
+  $.when(disconnect(), showMessage("Signing out ...")).done(showLoginView);
   return false;
+});
+
+$("body").keydown(function(event) {
+  if (canvas !== null) {
+    if (event.which === 219) {
+      brushSize -= BRUSH_SIZE_INC;
+      showMessage("dec");
+    } else if (event.which == 221) {
+      brushSize += BRUSH_SIZE_INC;
+      showMessage("inc");
+    }
+    // clamp
+  }
 });
 
 autoLogin().done(connect).fail(showLoginView);

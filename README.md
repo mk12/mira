@@ -10,6 +10,8 @@ Features:
 
 ## Development
 
+TODO
+
 ## Front end
 
 The web front end is served by GitHub Pages at https://mk12.github.io/mira/.
