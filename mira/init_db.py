@@ -3,7 +3,7 @@
 import sys
 
 from mira.database import db, is_db_running
-import mira.models
+import mira.models  # noqa
 
 
 def main():
@@ -13,4 +13,5 @@ def main():
     db.create_all()
 
 
-main()
+if __name__ == "__main__":
+    main()

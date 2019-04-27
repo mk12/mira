@@ -6,14 +6,14 @@ prog=$(basename "$0")
 
 app="mira:app"
 config_path="instance/application.cfg"
-py_init_db="init_db.py"
+py_init_db="mira/init_db.py"
 db_name="mira"
 pg_dir="database"
 pg_log="postgres.log"
+line_length=80
 
-cmd="run"
-port=5000
-env="development"
+cmd=dev
+port_opt=
 verbose=false
 
 say() {
@@ -35,22 +35,24 @@ run() {
 
 usage() {
     cat <<EOS
-usage: $prog [-hpv] [-b PORT] [COMMAND]
+usage: $prog [-hv] [-p PORT] COMMAND
 
 commands:
-    run        start the server (default)
-    deps       install dependencies (macOS only)
+    dev        start the flask server (default)
+    prod       build and start the prod server
+    web        start the vue server
+    install    install development dependencies
+    lint       format and lint code
     db:create  create the database
     db:drop    delete the database
     db:start   start postgres
     db:stop    stop postgres
-    db:psql    start psql session
+    db:psql    start a psql session
 
 options:
-    -h          show this help message
-    -p          run in production mode
-    -v          verbose output
-    -b PORT     bind to the given port
+    -h         show this help message
+    -v         verbose output
+    -p PORT    bind to the given port
 EOS
 }
 
@@ -67,35 +69,83 @@ EOS
     fi
 }
 
-run_server() {
+yarn_do() {
+    yarn --cwd web "$@"
+}
+
+run_dev() {
     ensure_config
     start_db
-    if [[ "$env" == "production" ]]; then
-        gunicorn -b "localhost:$port" "$app"
-    else
-        FLASK_APP="$app" FLASK_ENV="$env" python3 -m flask run -p "$port"
-    fi
+    say "Serving the flask app in development mode"
+    FLASK_APP="$app" FLASK_ENV="development" python3 -m flask run $port_opt
+}
+
+run_prod() {
+    say "Building the vue app for production"
+    yarn_do run build
+    say "Serving the flask app in production mode using waitress"
+    python3 -m waitress $port_opt "$app"
+}
+
+run_web() {
+    say "Serving the vue app in development mode"
+    yarn_do run serve $port_opt
 }
 
 install_deps() {
-    if [[ "$(uname -s)" != "Darwin" ]]; then
-        die "only works on macOS"
-    fi
-    if ! run command -v brew; then
-        die "brew not found (install it from https://brew.sh)"
-    fi
-
-    say "Installing Homebrew dependencies"
-    for p in python3 pipenv postgresql; do
-        if run brew list --versions "$p"; then
-            say "$p already installed"
-        elif ! brew install "$p"; then
-            die "failed to install $p"
+    to_install=()
+    for p in python3 postgres yarn; do
+        if ! run command -v "$p"; then
+            to_install+=("${p/postgres/postgresql}")
         fi
     done
+    if [[ "${#to_install[@]-0}" -gt 0 ]]; then
+        if [[ "$(uname -s)" != "Darwin" ]]; then
+            say "Please install these dependencies manually: ${to_install[*]}"
+            die "Could not automatically install dependencies"
+        fi
+        if ! run command -v brew; then
+            say "Please install Homebrew (https://brew.sh) and run this again"
+            die "Homebrew not installed"
+        fi
+        for p in "${to_install[@]}"; do
+            if ! brew install "$p"; then
+                die "Failed to install $p"
+            fi
+        done
+    fi
 
-    say "Installing Python dependencies"
-    pipenv install
+    say "Installing python dependencies"
+    pip3 install -r requirements-dev.txt \
+        | grep -v "Requirement already satisfied" || :
+
+    if ! run command -v vue; then
+        say "Installing the Vue cli"
+        yarn_do global add @vue/cli
+    fi
+
+    say "Installing javascript dependencies"
+    yarn_do install
+}
+
+lint_code() {
+    status=0
+
+    say "Linting python"
+    python3 -m black -l "$line_length" mira
+    python3 -m flake8 --max-line-length "$line_length" mira || status=$?
+
+    say "Linting javascript"
+    yarn_do run lint || status=$?
+
+    if run command -v shellcheck; then
+        say "Linting bash"
+        shellcheck "$0" || status=$?
+    else
+        say "Note: install shellcheck to lint bash scripts"
+    fi
+
+    return $status
 }
 
 pg_running() {
@@ -121,7 +171,7 @@ create_db() {
     fi
     ensure_config
     say "Running $py_init_db"
-    if ! run python3 "$py_init_db"; then
+    if ! python3 "$py_init_db"; then
         die "Failed to initialize database"
     fi
     stop_db
@@ -172,8 +222,11 @@ psql_db() {
 
 main() {
     case $cmd in
-        run) run_server ;;
-        deps) install_deps ;;
+        dev) run_dev ;;
+        prod) run_prod ;;
+        web) run_web ;;
+        install) install_deps ;;
+        lint) lint_code ;;
         db:create) create_db ;;
         db:drop) drop_db ;;
         db:start) start_db ;;
@@ -183,12 +236,16 @@ main() {
     esac
 }
 
-while getopts "hvpb:" opt; do
+if [[ $# -ge 1 && "$1" != "-"* ]]; then
+    cmd=$1
+    shift
+fi
+
+while getopts "hvp:" opt; do
     case $opt in
         h) usage ; exit 0 ;;
-        p) env="production" ;;
         v) verbose=true ;;
-        b) port=$OPTARG ;;
+        p) port_opt="--port $OPTARG" ;;
         *) exit 1 ;;
     esac
 done
@@ -197,7 +254,8 @@ shift $((OPTIND - 1))
 if [[ $# -eq 1 ]]; then
     cmd=$1
 elif [[ $# -gt 1 ]]; then
-    die "Too many arguments"
+    usage
+    exit 1
 fi
 
 main

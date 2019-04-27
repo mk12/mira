@@ -1,6 +1,6 @@
 """This module defines the Flask views (routes) for the server."""
 
-from flask import jsonify, request, render_template, send_file
+from flask import jsonify, request, render_template
 from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.exceptions import HTTPException
 
@@ -17,8 +17,9 @@ def http_error(ex):
     return render_template("error.html", **content), ex.code
 
 
-@app.route("/")
-def index():
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def catch_all(path):
     return render_template("index.html")
 
 

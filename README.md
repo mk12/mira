@@ -10,23 +10,53 @@ Features:
 
 ## Development
 
+OPTIONALLY
+- pyenv
+- virtualenv/venv
+
 TODO
 
-## Front end
+> ## Front end
 
-The web front end is served by GitHub Pages at https://mk12.github.io/mira/.
+> The code lives in the `docs` directory (it's not documentation, that's just the name GitHub requires). It uses jQuery and [Fabric.js](http://fabricjs.com).
 
-The code lives in the `docs` directory (it's not documentation, that's just the name GitHub requires). It uses jQuery and [Fabric.js](http://fabricjs.com).
+> For development, just open [index.html](docs/index.html) in your browser.
 
-For development, just open [index.html](docs/index.html) in your browser.
+> ## Back end
 
-## Back end
+> The back end is served by Heroku.
 
-The back end is served by Heroku.
+> The code lives in the `master` branch. It uses Python 3, [Flask](http://flask.pocoo.org), and PostgreSQL.
 
-The code lives in the `master` branch. It uses Python 3, [Flask](http://flask.pocoo.org), and PostgreSQL.
+> For development, use [install_deps.sh](install_deps.sh) and [run.sh](run.sh).
 
-For development, use [install_deps.sh](install_deps.sh) and [run.sh](run.sh).
+## UI
+```
+yarn install
+```
+
+### Compiles and hot-reloads for development
+```
+yarn run serve
+```
+
+### Compiles and minifies for production
+```
+yarn run build
+```
+
+### Run your tests
+```
+yarn run test
+```
+
+### Lints and fixes files
+```
+yarn run lint
+```
+
+### Customize configuration
+See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ## License
 
