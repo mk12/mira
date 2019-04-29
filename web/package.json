@@ -8,6 +8,7 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "core-js": "^2.6.5",
     "vue": "^2.6.10",
     "vue-router": "^3.0.3"
@@ -20,11 +21,20 @@
     "babel-eslint": "^10.0.1",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.0.0",
+    "node-sass": "^4.12.0",
+    "sass-loader": "^7.1.0",
     "vue-template-compiler": "^2.5.21"
   },
   "vue": {
     "outputDir": "../dist",
-    "assetsDir": "static"
+    "assetsDir": "static",
+    "css": {
+      "loaderOptions": {
+        "sass": {
+          "data": "@import '@/assets/variables.scss';"
+        }
+      }
+    }
   },
   "eslintConfig": {
     "root": true,

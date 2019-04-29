@@ -1,5 +1,7 @@
 <template>
-  <div class="about">
-    <h1>This is an about page</h1>
+  <div class="copy">
+    <h1>About</h1>
+    <p>Mira is a something.</p>
+    <p><router-link to="/">Back home</router-link></p>
   </div>
 </template>

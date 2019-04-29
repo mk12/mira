@@ -1,0 +1,8 @@
+$app-size: 500px;
+$light-blue: #f2fbff;
+$light-gray: #aaa;
+$light-yellow: #fcfaed;
+
+@function asset($path) {
+  @return url("~@/assets/#{$path}");
+}

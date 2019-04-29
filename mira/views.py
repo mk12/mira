@@ -2,7 +2,7 @@
 
 from flask import jsonify, request, render_template
 from flask_login import current_user, login_user, logout_user, login_required
-from werkzeug.exceptions import HTTPException
+from werkzeug.exceptions import HTTPException, InternalServerError
 
 from mira import app
 from mira.arguments import get_fields
@@ -10,11 +10,13 @@ from mira.models import User
 
 
 @app.errorhandler(HTTPException)
-def http_error(ex):
-    if request.path.startswith("/api/"):
-        return jsonify(error=ex.code, message=str(ex)), ex.code
-    content = {"heading": f"{ex.code} {ex.name}", "message": ex.description}
-    return render_template("error.html", **content), ex.code
+def handle_http_error(ex):
+    # For a 500 Internal Server Error, Flask passes the original exception. We
+    # don't want that as the exception message could have sensitive inforation.
+    # https://github.com/pallets/flask/issues/2778
+    if not isinstance(ex, HTTPException):
+        ex = InternalServerError()
+    return jsonify(error=ex.code, message=str(ex)), ex.code
 
 
 @app.route("/", defaults={"path": ""})
@@ -26,6 +28,11 @@ def catch_all(path):
 @app.login_manager.user_loader
 def load_user(user_id):
     return User.query.filter_by(login_id=user_id).first()
+
+
+@app.route("/api/ping", methods=["POST"])
+def ping():
+    return "pong"
 
 
 @app.route("/api/login", methods=["POST"])

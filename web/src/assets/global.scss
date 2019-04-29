@@ -1,0 +1,30 @@
+@import url("https://fonts.googleapis.com/css?family=Dancing+Script:400,700");
+
+body {
+  font: 20px "Dancing Script", cursive;
+}
+
+h1 {
+  font-weight: bold;
+  margin-bottom: 1em;
+}
+
+p {
+  margin-bottom: 1em;
+}
+
+a {
+  color: inherit;
+  text-decoration: inherit;
+  border-bottom: 1px dotted #000;
+
+  &:hover {
+    color: $light-gray;
+    border-bottom: 1px solid $light-gray;
+  }
+}
+
+.copy {
+  text-align: center;
+  margin: 100px 50px;
+}
