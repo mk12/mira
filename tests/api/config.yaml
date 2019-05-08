@@ -1,0 +1,8 @@
+---
+
+name: Global test configuration
+
+strict: false
+
+variables:
+  host: http://localhost:{tavern.env_vars.MIRA_PORT}

@@ -1,10 +1,10 @@
 <template>
   <div class="wrapper">
     <div class="container">
-      <router-view />
-    </div>
-    <div class="toolbar">
-      <router-view name="toolbar" />
+      <!-- <div class="banner"> -->
+      <!--   <router-link to="/" class="banner__link">M</router-link> -->
+      <!-- </div> -->
+      <router-view class="container__content" />
     </div>
   </div>
 </template>
@@ -12,43 +12,41 @@
 <style lang="scss">
 .wrapper {
   min-width: 100%;
-  min-height: 100vh;
+  min-height: 100%;
   display: inline-flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: $light-blue;
+  background: $backdrop;
+}
+
+.banner {
+  position: relative;
+  top: -40px;
+  text-align: center;
+}
+
+.banner__link {
+  border: none;
+  text-align: center;
 }
 
 .container {
   margin: 50px;
   padding: 0;
-  background: $light-yellow;
+  background: $background;
   border-image: asset("border.png") #{214} / #{103px} / #{14px} round;
   width: $app-size;
   height: $app-size;
   min-height: $app-size;
   position: relative;
-}
 
-.toolbar {
-  display: flex;
-  justify-content: center;
-  opacity: 0;
-  text-align: center;
-}
-
-.toolbar--permanent,
-.toolbar:hover {
-  opacity: 1;
-}
-
-.toolbar--transition {
-  /* https://stackoverflow.com/questions/9245030 */
-  transition: opacity 0.5s cubic-bezier(0.02, 0.01, 0.47, 1);
-}
-
-.toolbar__link {
-  padding: 0 20px;
+  &__content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+  }
 }
 </style>

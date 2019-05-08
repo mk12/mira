@@ -1,5 +1,7 @@
 # Mira
 
+TODO: mention BEM, json response format.
+
 Mira is an fun and simple communication app.
 
 Think of Mira as a virtual notepad on your friend or loved one's desk. Leave a note or drawing to brighten their day. Check back later to see if they left a reply.
@@ -51,7 +53,7 @@ Use `./run.sh prod` to serve the site as it would be in production. In particula
 
 This repository is already set up to be deployed on [Heroku][], so you can easily fork it and run your own instance.
 
-_TODO: Explain about application.cfg and setting up the database._
+_TODO: Explain other steps if there turn out to be any (secret key, migrations)._
 
 ## Why "Mira"?
 

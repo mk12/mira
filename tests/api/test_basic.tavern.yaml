@@ -1,0 +1,53 @@
+---
+
+test_name: Render index.html for all unknown routes
+
+stages:
+  - name: GET nothing
+    request:
+      url: "{host}"
+  - name: GET root
+    request:
+      url: "{host}/"
+  - name: GET meaningless route
+    request:
+      url: "{host}/foobarbaz"
+  - name: GET API route
+    request:
+      url: "{host}/api/login"
+
+---
+
+test_name: Return 405 for wrong HTTP method
+
+stages:
+  - name: POST root
+    request:
+      url: "{host}/"
+      method: POST
+    response:
+      status_code: 405
+  - name: POST meaningless route
+    request:
+      url: "{host}/foobarbaz"
+      method: POST
+    response:
+      status_code: 405
+  - name: DELETE API route that should be POST
+    request:
+      url: "{host}/api/login"
+      method: DELETE
+    response:
+      status_code: 405
+
+---
+
+test_name: Return 401 when not logged in
+
+stages:
+  - name: GET friends when not logged in
+    request:
+      url: "{host}/api/friends"
+    response:
+      status_code: 401
+

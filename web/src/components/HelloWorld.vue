@@ -103,7 +103,8 @@ export default {
   },
   methods: {
     pingServer() {
-      axios.post(`http://localhost:5000/api/ping`)
+      axios
+        .post(`http://localhost:5000/api/ping`)
         .then(response => {
           this.pingResult = response.data;
         })

@@ -1,0 +1,262 @@
+---
+
+test_name: Register and delete an account
+
+stages:
+  - &register_bob
+    name: Register an account
+    request:
+      url: "{host}/api/register"
+      method: POST
+      json:
+        username: bob
+        password: password
+    response:
+      body:
+        code: register
+        message: !anything
+
+  - &login_bob
+    name: Log into an account
+    request:
+      url: "{host}/api/login"
+      method: POST
+      json:
+        username: bob
+        password: password
+    response:
+      body:
+        code: login
+        message: !anything
+
+  - &delete_bob
+    name: Delete an account
+    request:
+      url: "{host}/api/account"
+      method: DELETE
+      json:
+        password: password
+    response:
+      body:
+        code: delete
+        message: !anything
+
+---
+
+test_name: Login requires correct username and password
+
+stages:
+  - *register_bob
+
+  - &login_bob_bad_username
+    name: Attempt login with incorrect username
+    request:
+      url: "{host}/api/login"
+      method: POST
+      json:
+        username: not_bob
+        password: password
+    response:
+      status_code: 401
+      body:
+        code: login_fail
+        message: !anything
+
+  - &login_bob_bad_password
+    name: Attempt login with incorrect password
+    request:
+      url: "{host}/api/login"
+      method: POST
+      json:
+        username: bob
+        password: asdf
+    response:
+      status_code: 401
+      body:
+        code: login_fail
+        message: !anything
+
+  - *login_bob
+  - *delete_bob
+
+---
+
+test_name: Deleting account requires correct password
+
+stages:
+  - *register_bob
+  - *login_bob
+
+  - &delete_bob_bad_password
+    name: Attempt to delete account with incorrect password
+    request:
+      url: "{host}/api/account"
+      method: DELETE
+      json:
+        password: asdf
+    response:
+      status_code: 401
+      body:
+        code: auth_fail
+        message: !anything
+
+  - *delete_bob
+
+---
+
+test_name: Access user APIs while logged in
+
+stages:
+  - *register_bob
+  - *login_bob
+
+  - &user_api
+    name: GET friends
+    request:
+      url: "{host}/api/friends"
+
+  - *delete_bob
+
+---
+
+test_name: Cannot access user APIs while logged out
+
+stages:
+  - *register_bob
+
+  - &user_api_denied
+    <<: *user_api
+    response:
+      status_code: 401
+
+  - *login_bob
+  - *user_api
+
+  - &logout_bob
+    name: Log out of an account
+    request:
+      url: "{host}/api/logout"
+      method: POST
+    response:
+      body:
+        code: logout
+        message: !anything
+
+  - *user_api_denied
+  - *login_bob
+  - *delete_bob
+
+---
+
+test_name: Accounts must have unique usernames
+
+stages:
+  - *register_bob
+
+  - <<: *register_bob
+    response:
+      status_code: 409
+      body:
+        code: username_taken
+
+  - *login_bob
+  - *delete_bob
+
+
+---
+
+test_name: Username cannot be blank
+
+stages:
+  - name: Register an account with a blank username
+    request:
+      url: "{host}/api/register"
+      method: POST
+      json:
+        username: ""
+        password: password
+    response:
+      status_code: 422
+      body:
+        code: invalid_field
+        field: username
+        message: !anything
+
+---
+
+test_name: Passwords must be long enough
+
+stages:
+  - name: Register an account with a short password
+    request:
+      url: "{host}/api/register"
+      method: POST
+      json:
+        username: bob
+        password: 123
+    response:
+      status_code: 422
+      body:
+        code: invalid_field
+        field: password
+        message: !anything
+
+---
+
+test_name: User can reset password
+
+stages:
+  - *register_bob
+  - *login_bob
+
+  - name: Reset password
+    request:
+      url: "{host}/api/reset_password"
+      method: PUT
+      json:
+        password: password
+        new_password: new_password
+    response:
+      body:
+        code: reset
+        message: !anything
+
+  - *user_api_denied
+
+  - name: Attempt login with old password
+    request:
+      url: "{host}/api/login"
+      method: POST
+      json:
+        username: bob
+        password: password
+    response:
+      status_code: 401
+      body:
+        code: login_fail
+        message: !anything
+
+  - name: Log in with new password
+    request:
+      url: "{host}/api/login"
+      method: POST
+      json:
+        username: bob
+        password: new_password
+    response:
+      body:
+        code: login
+        message: !anything
+
+  - *user_api
+
+  - name: Delete an account
+    request:
+      url: "{host}/api/account"
+      method: DELETE
+      json:
+        password: new_password
+    response:
+      body:
+        code: delete
+        message: !anything

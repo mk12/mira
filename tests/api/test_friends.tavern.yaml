@@ -1,0 +1,285 @@
+---
+
+test_name: Two users add each other as friends
+
+stages:
+  - &register_bob
+    name: Register Bob's account
+    request:
+      url: "{host}/api/register"
+      method: POST
+      json:
+        username: bob
+        password: password
+
+  - &register_alice
+    name: Register Alice's account
+    request:
+      url: "{host}/api/register"
+      method: POST
+      json:
+        username: alice
+        password: wonderland
+
+  - &login_bob
+    name: Log into Bob's account
+    request:
+      url: "{host}/api/login"
+      method: POST
+      json:
+        username: bob
+        password: password
+
+  - &get_friends
+    name: GET friends
+    request:
+      url: "{host}/api/friends"
+    response:
+      body:
+        code: friends
+        friends: []
+        incoming_requests: []
+        outgoing_requests: []
+
+  - &friend_alice
+    name: Add Alice as a friend
+    request:
+      url: "{host}/api/friends/alice"
+      method: PUT
+    response:
+      body:
+        code: request
+        message: !anything
+
+  - <<: *get_friends
+    response:
+      body:
+        code: friends
+        friends: []
+        incoming_requests: []
+        outgoing_requests: [alice]
+
+  - &login_alice
+    name: Log into Alice's account
+    request:
+      url: "{host}/api/login"
+      method: POST
+      json:
+        username: alice
+        password: wonderland
+
+  - <<: *get_friends
+    response:
+      body:
+        code: friends
+        friends: []
+        incoming_requests: [bob]
+        outgoing_requests: []
+
+  - &friend_bob
+    name: Add Bob as a friend
+    request:
+      url: "{host}/api/friends/bob"
+      method: PUT
+    response:
+      body:
+        code: accept
+        message: !anything
+
+  - <<: *get_friends
+    response:
+      body:
+        code: friends
+        friends: [bob]
+        incoming_requests: []
+        outgoing_requests: []
+
+  - &delete_alice
+    name: Delete Alice's account
+    request:
+      url: "{host}/api/account"
+      method: DELETE
+      json:
+        password: wonderland
+
+  - *login_bob
+
+  - &delete_bob
+    name: Delete Bob's account
+    request:
+      url: "{host}/api/account"
+      method: DELETE
+      json:
+        password: password
+
+---
+
+test_name: Cannot friend self
+
+stages:
+  - *register_bob
+  - *login_bob
+
+  - <<: *friend_bob
+    response:
+      status_code: 422
+      body:
+        code: self
+        message: !anything
+
+  - *delete_bob
+
+---
+
+test_name: Cannot friend user who does not exist
+
+stages:
+  - *register_bob
+  - *login_bob
+
+  - name: Add asdf as a friend
+    request:
+      url: "{host}/api/friends/asdf"
+      method: PUT
+    response:
+      status_code: 404
+      body:
+        code: unknown_user
+        message: !anything
+
+  - *delete_bob
+
+---
+
+test_name: Repeated friend requests are no-ops
+
+stages:
+  - *register_bob
+  - *register_alice
+  - *login_bob
+  - *friend_alice
+
+  - <<: *friend_alice
+    response:
+      body:
+        code: no_op
+        message: !anything
+
+  - *delete_bob
+  - *login_alice
+  - *delete_alice
+
+---
+
+test_name: Friend requests can be revoked
+
+stages:
+  - *register_bob
+  - *register_alice
+  - *login_bob
+  - *friend_alice
+  - *login_alice
+
+  - <<: *get_friends
+    response:
+      body:
+        incoming_requests: [bob]
+
+  - *login_bob
+  
+  - &unfriend_alice
+    name: Remove Alice as a friend
+    request:
+      url: "{host}/api/friends/alice"
+      method: DELETE
+    response:
+      body:
+        code: revoke
+        message: !anything
+
+  - *login_alice
+
+  - <<: *get_friends
+    response:
+      body:
+        incoming_requests: []
+
+  - *delete_alice
+  - *login_bob
+  - *delete_bob
+
+---
+
+test_name: Friends can be removed
+
+stages:
+  - *register_bob
+  - *register_alice
+  - *login_bob
+  - *friend_alice
+  - *login_alice
+  - *friend_bob
+  
+  - <<: *get_friends
+    response:
+      body:
+        friends: [bob]
+        incoming_requests: []
+        outgoing_requests: []
+
+  - *login_bob
+
+  - <<: *get_friends
+    response:
+      body:
+        friends: [alice]
+        incoming_requests: []
+        outgoing_requests: []
+
+  - <<: *unfriend_alice
+    response:
+      body:
+        code: unfriend
+
+  - <<: *get_friends
+    response:
+      body:
+        friends: []
+        incoming_requests: [alice]
+        outgoing_requests: []
+
+  - *login_alice
+
+  - <<: *get_friends
+    response:
+      body:
+        friends: []
+        incoming_requests: []
+        outgoing_requests: [bob]
+
+  - *delete_alice
+  - *login_bob
+  - *delete_bob
+
+---
+
+test_name: Deleting account ends friendships
+
+stages:
+  - *register_bob
+  - *register_alice
+  - *login_bob
+  - *friend_alice
+  - *login_alice
+  - *friend_bob
+  - *delete_alice
+  - *login_bob
+
+  - <<: *get_friends
+    response:
+      body:
+        friends: []
+        incoming_requests: []
+        outgoing_requests: []
+
+  - *delete_bob

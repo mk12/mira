@@ -1,41 +1,19 @@
-"""Package mira is a Flask backend for the Mira application."""
+"""Package mira is a Flask back end for the Mira application."""
 
 import os
 
 from flask import Flask
-from flask_login.login_manager import LoginManager
+
+from mira.config import get_config
 
 app = Flask(
     "mira",
     root_path=os.getcwd(),
     template_folder="dist",
     static_folder="dist/static",
-    instance_relative_config=True,
 )
 
-app.config.from_object("mira.default_config")
-app.config.from_pyfile("application.cfg", silent=True)
+app.config.update(get_config(app.env))
 
-LoginManager(app)
-
-# In debug mode, enable cross-origin requests since we serve the Vue app on a
-# different port for hot reloading.
-if app.debug:
-    from flask_cors import CORS
-
-    CORS(app, with_credentials=True, resources={r"/api/*": {"origins": "*"}})
-
-
-# In production, use SeaSurf for CSRF protection.
-if not app.debug:
-    from flask_seasurf import SeaSurf
-
-    SeaSurf(app)
-
-# In real production (Heroku), use Talisman to enforce https.
-if not app.debug and "DYNO" in os.environ:
-    from flask_talisman import Talisman
-
-    Talisman(app)
-
-import mira.views  # noqa
+import mira.extensions  # noqa
+import mira.views  # noqak

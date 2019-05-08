@@ -4,3 +4,5 @@ black
 flake8
 flake8-bugbear
 flask-cors ~= 3.0
+pytest ~= 4.4
+tavern ~= 0.26
