@@ -50,4 +50,3 @@ stages:
       url: "{host}/api/friends"
     response:
       status_code: 401
-

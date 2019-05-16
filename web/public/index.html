@@ -21,8 +21,7 @@
     </noscript>
     <div id="app"></div>
     <% if (process.env.NODE_ENV === "production") { %>
-      <script>
-        // The token is rendered by Flask/Jinja2.
+      <script nonce="{{ csp_nonce() }}">
         window.csrfToken = {{ csrf_token() | tojson }};
       </script>
     <% } %>

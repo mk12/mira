@@ -2,7 +2,7 @@
 
 from base64 import b64encode
 
-from flask import abort, jsonify, request, render_template
+from flask import jsonify, request, render_template
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import HTTPException, InternalServerError
@@ -11,7 +11,7 @@ from mira import app
 from mira.errors import InvalidAttribute
 from mira.extensions import db, limiter, login_manager
 from mira.models import Canvas, Friendship, User
-from mira.request import error, get_fields, get_json, ok
+from mira.request import error, get_fields, ok
 
 
 # Rate limits for API endpoints.
@@ -166,12 +166,13 @@ def remove_friend(username):
 @login_required
 @logged_in_limit
 def get_friends():
-    serialize = lambda users: [u.username for u in users]
+    def serialize(users):
+        return [u.username for u in users]
+
     return jsonify(
-        code="friends",
         friends=serialize(current_user.friends()),
         incoming_requests=serialize(current_user.incoming_friend_requests()),
-        outgoing_requests=serialize(current_user.outgoing_friend_requests())
+        outgoing_requests=serialize(current_user.outgoing_friend_requests()),
     )
 
 
@@ -185,6 +186,7 @@ def get_canvas(username):
     friendship = Friendship.between(current_user, user)
     if not friendship:
         return error(404, "not_friends", "Not friends with that user")
+    # if no canvas, check for reciprocating friendship & create if exists
     data = friendship.canvas.data
     if not data:
         return error(404, "no_canvas", "No canvas found")

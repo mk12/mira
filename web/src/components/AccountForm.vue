@@ -40,12 +40,13 @@
       </div>
       <div class="form-group">
         <div class="form-group__item">
-          <input
-            type="submit"
-            class="button"
-            :value="submitLabel"
-            :disabled="!submitEnabled"
-          />
+          <SubmitButton :value="submitLabel" :submitting="submitting" />
+          <!-- <input -->
+          <!--   type="submit" -->
+          <!--   class="button" -->
+          <!--   :value="submitLabel" -->
+          <!--   :disabled="!submitEnabled" -->
+          <!-- /> -->
         </div>
         <div class="form-group__item">
           <router-link :to="alternateLocation">{{
@@ -64,6 +65,8 @@
 
 <script>
 import { MIN_PASSWORD_LENGTH } from "@/constants.js";
+
+import SubmitButton from "@/components/SubmitButton.vue";
 
 export default {
   name: "AccountForm",
@@ -86,7 +89,7 @@ export default {
       password: this.prefill.password,
       passwordConfirm: "",
       error: {},
-      submitEnabled: true
+      submitting: false
     };
   },
 

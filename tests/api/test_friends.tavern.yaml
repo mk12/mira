@@ -36,7 +36,6 @@ stages:
       url: "{host}/api/friends"
     response:
       body:
-        code: friends
         friends: []
         incoming_requests: []
         outgoing_requests: []
@@ -54,7 +53,6 @@ stages:
   - <<: *get_friends
     response:
       body:
-        code: friends
         friends: []
         incoming_requests: []
         outgoing_requests: [alice]
@@ -71,7 +69,6 @@ stages:
   - <<: *get_friends
     response:
       body:
-        code: friends
         friends: []
         incoming_requests: [bob]
         outgoing_requests: []
@@ -89,7 +86,6 @@ stages:
   - <<: *get_friends
     response:
       body:
-        code: friends
         friends: [bob]
         incoming_requests: []
         outgoing_requests: []
@@ -281,5 +277,3 @@ stages:
         friends: []
         incoming_requests: []
         outgoing_requests: []
-
-  - *delete_bob

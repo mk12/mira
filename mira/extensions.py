@@ -11,12 +11,28 @@ from flask_talisman import Talisman
 from mira import app
 
 
+CONTENT_SECURITY_POLICY = {
+    "default-src": "'self'",
+    "script-src": "'self'",
+    # Allow base64-encoded image data.
+    "img-src": "'self' data:",
+    # Allow fonts from Google Fonts.
+    "font-src": "'self' *.gstatic.com",
+    "style-src": "'self' fonts.googleapis.com *.gstatic.com",
+}
+
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 limiter = Limiter(app, key_func=get_remote_address)
-talisman = Talisman(app, force_https=app.config["FORCE_HTTPS"])
 sea_surf = SeaSurf(app)
+talisman = Talisman(
+    app,
+    force_https=app.config["FORCE_HTTPS"],
+    content_security_policy=CONTENT_SECURITY_POLICY,
+    content_security_policy_nonce_in=["script-src"],
+)
 
 if app.debug:
     # Enable cross-origin requests in debug mode, since we serve the Vue app on
@@ -24,7 +40,6 @@ if app.debug:
     from flask_cors import CORS
 
     CORS(app, resources={r"/api/*": {"origins": "*"}})
-
 
     # Log all database queries in debug mode.
     import logging

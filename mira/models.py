@@ -6,7 +6,7 @@ from flask_login.mixins import UserMixin
 from sqlalchemy import CheckConstraint, Column, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import backref, relationship, validates
-from sqlalchemy.types import Boolean, DateTime, Integer, LargeBinary, String
+from sqlalchemy.types import DateTime, Integer, LargeBinary, String
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from mira.errors import InvalidAttribute

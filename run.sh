@@ -22,6 +22,7 @@ db_env_path="$db_dir/current"
 cmd=dev
 port=
 verbose=false
+skip_prod_build=false
 db_env=
 db_env_dir=
 postgres_dir=
@@ -70,6 +71,7 @@ commands:
 options:
     -h         show this help message
     -v         verbose output
+    -s         skip build when running prod server
     -d ENV     specify db environment (default: $default_db_env)
     -p PORT    bind to the given port
     -k EXPR    filter for pytest
@@ -134,8 +136,12 @@ run_web() {
 
 run_prod() {
     : ${port:=$default_web_port}
-    say "Building the vue app for production"
-    yarn_do run build
+    if [[ "$skip_prod_build" == true && -f "dist/index.html" ]]; then
+        say "Skipping vue app build"
+    else
+        say "Building the vue app for production"
+        yarn_do run build
+    fi
     say "Serving the flask app in production mode using waitress on port $port"
     FLASK_FORCE_HTTPS=no python3 -m waitress --port "$port" "$flask_app"
 }
@@ -358,10 +364,11 @@ if [[ $# -ge 1 && "$1" != "-"* ]]; then
     shift
 fi
 
-while getopts "hvk:d:p:" opt; do
+while getopts "hvsk:d:p:" opt; do
     case $opt in
         h) usage ; exit 0 ;;
         v) verbose=true ;;
+        s) skip_prod_build=true ;;
         k) pytest_filter="-k $OPTARG" ;;
         d) set_db_env "$OPTARG" ;;
         p) port=$OPTARG ;;

@@ -1,10 +1,14 @@
 <template>
   <div class="wrapper">
     <div class="container">
-      <!-- <div class="banner"> -->
-      <!--   <router-link to="/" class="banner__link">M</router-link> -->
-      <!-- </div> -->
       <router-view class="container__content" />
+      <nav class="container__navigation">
+        <ul class="nav-list">
+          <li class="nav-list__item">
+            <router-link to="/" class="nav-link">Home</router-link>
+          </li>
+        </ul>
+      </nav>
     </div>
   </div>
 </template>
@@ -18,17 +22,6 @@
   justify-content: center;
   align-items: center;
   background: $backdrop;
-}
-
-.banner {
-  position: relative;
-  top: -40px;
-  text-align: center;
-}
-
-.banner__link {
-  border: none;
-  text-align: center;
 }
 
 .container {
@@ -47,6 +40,33 @@
     left: 0;
     bottom: 0;
     right: 0;
+  }
+
+  &__navigation {
+    position: absolute;
+    bottom: -55px;
+    left: 0px;
+    right: 0px;
+  }
+}
+
+.nav-list {
+  margin: 0;
+  padding: 0;
+  text-align: center;
+
+  &__item {
+    display: inline-block;
+    margin: 15px;
+  }
+}
+
+.nav-link {
+  color: $subtle;
+  border: 0;
+
+  &:hover {
+    border: 0;
   }
 }
 </style>
