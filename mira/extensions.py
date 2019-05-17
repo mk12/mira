@@ -26,10 +26,11 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 limiter = Limiter(app, key_func=get_remote_address)
-sea_surf = SeaSurf(app)
+csrf = SeaSurf(app)
 talisman = Talisman(
     app,
     force_https=app.config["FORCE_HTTPS"],
+    session_cookie_secure=app.config["SESSION_COOKIE_SECURE"],
     content_security_policy=CONTENT_SECURITY_POLICY,
     content_security_policy_nonce_in=["script-src"],
 )
@@ -39,7 +40,9 @@ if app.debug:
     # a different port with webpack-dev-server.
     from flask_cors import CORS
 
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    CORS(
+        app, supports_credentials=True, resources={r"/api/*": {"origins": "*"}}
+    )
 
     # Log all database queries in debug mode.
     import logging

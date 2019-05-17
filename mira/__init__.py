@@ -16,4 +16,4 @@ app = Flask(
 app.config.update(get_config(app.env))
 
 import mira.extensions  # noqa
-import mira.views  # noqak
+import mira.views  # noqa

@@ -1,14 +1,17 @@
 import Vue from "vue";
 import Router from "vue-router";
 
+import auth from "@/auth";
+
 import Index from "@/views/Index.vue";
 import LogIn from "@/views/LogIn.vue";
 import NotFound from "@/views/NotFound.vue";
+import Settings from "@/views/Settings.vue";
 import SignUp from "@/views/SignUp.vue";
 
 Vue.use(Router);
 
-export default new Router({
+let router = new Router({
   mode: "history",
   routes: [
     {
@@ -29,6 +32,34 @@ export default new Router({
       props: true
     },
     {
+      path: "/settings",
+      name: "settings",
+      component: Settings,
+      meta: { loginRequired: true }
+    },
+    // {
+    //   path: "/friends",
+    //   name: "friends",
+    //   component: Friends,
+    //   meta: { loginRequired: true },
+    //   children: [
+    //     {
+    //       path: ":username",
+    //       name: "friend",
+    //       component: Friend,
+    //       meta: { loginRequired: true },
+    //       children: [
+    //         {
+    //           path: "canvas",
+    //           name: "canvas",
+    //           component: Canvas,
+    //           meta: { loginRequired: true }
+    //         }
+    //       ]
+    //     }
+    //   ]
+    // },
+    {
       path: "*",
       name: "404",
       component: NotFound
@@ -36,12 +67,17 @@ export default new Router({
   ]
 });
 
-// {
-//   path: "/about",
-//   name: "about",
-//   // route level code-splitting
-//   // this generates a separate chunk (about.[hash].js) for this route
-//   // which is lazy-loaded when the route is visited.
-//   component: () =>
-//     import(/* webpackChunkName: "about" */ "@/views/About.vue")
-// },
+router.beforeEach((to, from, next) => {
+  if (
+    to.matched.some(record => record.meta.loginRequired) && !auth.isLoggedIn()
+  ) {
+    next({
+      path: "/login",
+      query: { redirect: to.fullPath }
+    });
+  } else {
+    next();
+  }
+});
+
+export default router;

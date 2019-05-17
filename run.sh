@@ -140,10 +140,16 @@ run_prod() {
         say "Skipping vue app build"
     else
         say "Building the vue app for production"
-        yarn_do run build
+        VUE_APP_BACKEND="http://localhost:$port/api/" yarn_do run build
     fi
+    if ! [[ -d "$postgres_dir" ]]; then
+        create_db
+    fi
+    start_db
     say "Serving the flask app in production mode using waitress on port $port"
-    FLASK_FORCE_HTTPS=no python3 -m waitress --port "$port" "$flask_app"
+    say "WARNING: DO NOT USE THIS SCRIPT IN REAL PRODUCTION! HTTPS IS DISABLED!"
+    FLASK_ENV="production" FLASK_FORCE_HTTPS=no \
+        python3 -m waitress --port "$port" "$flask_app"
 }
 
 run_test() {
@@ -167,14 +173,14 @@ DELETE FROM friendships;
 DELETE FROM canvases;
 EOS
     say "Starting flask test server"
-    FLASK_APP="$flask_app" FLASK_ENV="development" FLASK_RATELIMIT_ENABLED=no \
+    FLASK_APP="$flask_app" FLASK_ENV="testing" \
         python3 -m flask run --port "$port" > flask_test.log 2>&1 &
     flask_pid=$!
     say "Running api tests"
     status=0
     MIRA_PORT=$port python3 -m pytest tests $pytest_filter || status=$?
     say "Stopping the flask test server"
-    kill "$flask_pid"
+    run kill "$flask_pid"
     stop_db
     return $status
 }
@@ -242,7 +248,7 @@ pg_running() {
     for pid in $(pgrep -x postgres); do
         say "Note: found another postgres process (kill it with 'kill $pid')"
     done
-    if nc -z localhost "$postgres_port"; then
+    if run nc -z localhost "$postgres_port"; then
         die "Port $postgres_port is already in use"
     fi
     return 1
@@ -385,7 +391,9 @@ elif [[ $# -gt 1 ]]; then
 fi
 
 if [[ -z "$db_env" ]]; then
-    if [[ "$cmd" == "test" ]]; then
+    if [[ "$cmd" == "prod" ]]; then
+        set_db_env "prod"
+    elif [[ "$cmd" == "test" ]]; then
         set_db_env "test"
     elif [[ -s "$db_env_path" ]]; then
         set_db_env "$(< "$db_env_path")"

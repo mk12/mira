@@ -8,16 +8,15 @@
       Please choose a username and password.
     </template>
     <template #extra="{ form }">
-      <router-link :to="loginRoute(form)"
-        >Already have an account?</router-link
-      >
+      <router-link :to="loginRoute(form)">Already have an account?</router-link>
     </template>
   </BasicForm>
 </template>
 
 <script>
-import api from "@/api";
-import { MIN_PASSWORD_LENGTH } from "@/constants.js";
+import auth from "@/auth";
+import { MIN_PASSWORD_LENGTH } from "@/constants";
+import { errorMessage, isCode } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
 
@@ -38,7 +37,7 @@ export default {
         {
           id: "username",
           type: "text",
-          label: "Username", 
+          label: "Username",
           placeholder: "Choose a username",
           required: "Please choose a username"
         },
@@ -64,7 +63,8 @@ export default {
     loginRoute(form) {
       return {
         name: "login",
-        params: {prefill: form}
+        params: { prefill: form },
+        query: this.$route.query
       };
     },
 
@@ -82,21 +82,16 @@ export default {
     },
 
     async submit(form) {
-      let credentials = {
-        username: form.username.value,
-        password: form.password.value
-      };
       try {
-        await api.post("register", credentials);
-        await api.post("login", credentials);
-        this.$router.push({ name: "home" });
+        await auth.register(form.username.value, form.password.value);
+        await auth.login(form.username.value, form.password.value);
       } catch (error) {
-        if (error.response.data.code === "username_taken") {
+        if (isCode(error, "username_taken")) {
           form.username.error = true;
-          return "Username is already taken.";
         }
-        return "An unknown error occurred.";
+        return errorMessage(error);
       }
+      this.$router.push(this.$route.query.redirect || "/");
     }
   }
 };

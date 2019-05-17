@@ -5,11 +5,11 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    username: "mk"
+    username: null
   },
 
   getters: {
-    isLoggedIn: state => !!state.username,
+    isLoggedIn: state => !!state.username
   },
 
   mutations: {

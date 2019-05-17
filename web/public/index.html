@@ -23,6 +23,7 @@
     <% if (process.env.NODE_ENV === "production") { %>
       <script nonce="{{ csp_nonce() }}">
         window.csrfToken = {{ csrf_token() | tojson }};
+        window.miraUsername = {{ username | tojson }};
       </script>
     <% } %>
     <!-- built files will be auto injected -->

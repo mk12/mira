@@ -37,13 +37,20 @@ def handle_http_error(ex):
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def catch_all(path):
-    # Use render_template for the CSRF token.
-    return render_template("index.html")
+    username = current_user.username if current_user.is_authenticated else None
+    return render_template("index.html", username=username)
 
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.filter_by(login_id=user_id).first()
+
+
+@app.route("/api/check")
+@login_required
+@logged_in_limit
+def check():
+    return ok("logged_in", "You are logged in", username=current_user.username)
 
 
 @app.route("/api/login", methods=["POST"])

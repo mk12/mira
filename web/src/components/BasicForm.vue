@@ -4,11 +4,7 @@
     <p><slot name="instructions" /></p>
     <form @submit.prevent="submitForm">
       <div class="form-group">
-        <div
-          v-for="field in fields"
-          :key="field.id"
-          class="form-group__item"
-        >
+        <div v-for="field in fields" :key="field.id" class="form-group__item">
           <label :for="field.id" class="label">{{ field.label }}</label>
           <input
             :id="field.id"
@@ -72,7 +68,7 @@ export default {
       form[field.id] = {
         value: input ? input.value : "",
         error: false
-      }
+      };
     }
     return {
       form,

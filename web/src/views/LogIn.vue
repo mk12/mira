@@ -16,7 +16,8 @@
 </template>
 
 <script>
-import api from "@/api";
+import auth from "@/auth";
+import { errorMessage } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
 
@@ -56,26 +57,18 @@ export default {
     signupRoute(form) {
       return {
         name: "signup",
-        params: {prefill: form}
+        params: { prefill: form },
+        query: this.$route.query
       };
     },
 
     async submit(form) {
-      let credentials = {
-        username: form.username.value,
-        password: form.password.value
-      };
       try {
-        await api.post("login", credentials);
-        this.$store.commit("login", credentials.username);
-        this.$router.push({name: "index"});
-        return "foo";
+        await auth.login(form.username.value, form.password.value);
       } catch (error) {
-        if (error.response.data.code === "login_fail") {
-          return "Wrong username or password.";
-        }
-        return "An unknown error occurred.";
+        return errorMessage(error);
       }
+      this.$router.push(this.$route.query.redirect || "/");
     }
   }
 };

@@ -2,14 +2,14 @@
   <div class="text-page">
     <h1>Welcome to Mira</h1>
     <p>Mira is a fun and simple communication app.</p>
-    <ul class="bullet-list">
-      <li class="bullet-list__item">
+    <ul class="bullets">
+      <li class="bullets__item">
         Share messages or doodles with a friend.
       </li>
-      <li class="bullet-list__item">
+      <li class="bullets__item">
         Drawings slowly fade away over 24 hours.
       </li>
-      <li class="bullet-list__item">
+      <li class="bullets__item">
         No notifications. Just check when you want.
       </li>
     </ul>
@@ -22,13 +22,13 @@
         style="vertical-align: -6%;"
       />
     </p>
-    <ul class="button-list">
-      <li class="button-list__item">
+    <ul class="horiz-buttons">
+      <li class="horiz-buttons__item">
         <router-link to="/signup" tag="button" class="button"
           >Sign up</router-link
         >
       </li>
-      <li class="button-list__item">
+      <li class="horiz-buttons__item">
         <router-link to="/login" tag="button" class="button"
           >Log in</router-link
         >

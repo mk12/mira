@@ -2,13 +2,20 @@
 import "@/assets/reset.scss";
 import "@/assets/global.scss";
 
-import App from "@/App.vue";
 import Vue from "vue";
+
+import auth from "@/auth";
 import router from "@/router";
 import store from "@/store";
 
-new Vue({
-  router,
-  store,
-  render: h => h(App)
-}).$mount("#app");
+import App from "@/App.vue";
+
+function main() {
+  new Vue({
+    router,
+    store,
+    render: h => h(App)
+  }).$mount("#app");
+}
+
+auth.autoLogin().finally(main);

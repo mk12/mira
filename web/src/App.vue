@@ -7,11 +7,46 @@
           <li class="nav-list__item">
             <router-link to="/" class="nav-link">Home</router-link>
           </li>
+          <template v-if="isLoggedIn()">
+            <li class="nav-list__item">
+              <router-link to="/settings" class="nav-link">Settings</router-link>
+            </li>
+            <li class="nav-list__item">
+              <a href="#" class="nav-link" @click.prevent="logout()">Log out</a>
+            </li>
+          </template>
+          <template v-else>
+            <li class="nav-list__item">
+              <router-link to="/signup" class="nav-link">Sign up</router-link>
+            </li>
+            <li class="nav-list__item">
+              <router-link to="/login" class="nav-link">Log in</router-link>
+            </li>
+          </template>
         </ul>
       </nav>
     </div>
   </div>
 </template>
+
+<script>
+import auth from "@/auth";
+
+export default {
+  name: "App",
+
+  methods: {
+    isLoggedIn() {
+      return auth.isLoggedIn();
+    },
+
+    async logout() {
+      await auth.logout();
+      this.$router.push("/");
+    }
+  }
+};
+</script>
 
 <style lang="scss">
 .wrapper {
@@ -68,5 +103,11 @@
   &:hover {
     border: 0;
   }
+}
+
+.router-link-exact-active {
+  color: $action;
+  cursor: default;
+  pointer-events: none;
 }
 </style>
