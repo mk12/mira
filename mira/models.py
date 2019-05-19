@@ -5,7 +5,14 @@ from uuid import uuid4
 from flask_login.mixins import UserMixin
 from sqlalchemy import CheckConstraint, Column, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.orm import backref, relationship, validates
+from sqlalchemy.orm import (
+    backref,
+    deferred,
+    joinedload,
+    relationship,
+    undefer,
+    validates,
+)
 from sqlalchemy.types import DateTime, Integer, LargeBinary, String
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -14,7 +21,7 @@ from mira.extensions import db
 
 
 MIN_PASSWORD_LENGTH = 8
-MAX_FRIENDS = 5
+MAX_FRIENDS = 6
 
 
 class BaseModel(db.Model):
@@ -97,6 +104,53 @@ class User(BaseModel, UserMixin):
         ids = {user.id for user in self.frienders}
         return [user for user in self.friendees if user.id not in ids]
 
+    def friends_data(self):
+        """Return friends and associated data."""
+        outgoing = self.outgoing_friendships.options(
+            joinedload(Friendship.friendee),
+            joinedload(Friendship.canvas).undefer(Canvas.thumbnail)
+        )
+        incoming = self.incoming_friendships.options(
+            joinedload(Friendship.friender)
+        )
+        incoming_ids = {friendship.friender_id for friendship in incoming}
+        friends = []
+        only_outgoing = []
+        only_incoming = []
+        for friendship in outgoing:
+            if friendship.friendee_id in incoming_ids:
+                friends.append(
+                    {
+                        "username": friendship.friendee.username,
+                        "state": "friend",
+                        "time": friendship.updated_at,
+                        "thumbnail": friendship.canvas.thumbnail,
+                    }
+                )
+                incoming_ids.remove(friendship.friender_id)
+            else:
+                only_outgoing.append(
+                    {
+                        "username": friendship.friendee.username,
+                        "state": "outgoing",
+                        "time": friendship.updated_at,
+                    }
+                )
+        for friendship in incoming:
+            if friendship.friender_id in incoming_ids:
+                only_incoming.append(
+                    {
+                        "username": friendship.friender.username,
+                        "state": "incoming",
+                        "time": friendship.updated_at,
+                    }
+                )
+        sort_key = lambda record: record["username"]
+        friends.sort(key=sort_key)
+        only_outgoing.sort(key=sort_key)
+        only_incoming.sort(key=sort_key)
+        return friends + only_outgoing + only_incoming
+
     def __eq__(self, other):
         # Don't do class check since current_user is a proxy object.
         return self.id == other.id
@@ -124,14 +178,18 @@ class Friendship(BaseModel):
         "User",
         foreign_keys=[friender_id],
         backref=backref(
-            "outgoing_friendships", cascade="save-update, merge, delete"
+            "outgoing_friendships",
+            lazy="dynamic",
+            cascade="save-update, merge, delete",
         ),
     )
     friendee = relationship(
         "User",
         foreign_keys=[friendee_id],
         backref=backref(
-            "incoming_friendships", cascade="save-update, merge, delete"
+            "incoming_friendships",
+            lazy="dynamic",
+            cascade="save-update, merge, delete",
         ),
     )
     canvas = relationship(
@@ -159,8 +217,8 @@ class Canvas(BaseModel):
     __tablename__ = "canvases"
 
     id = Column(Integer, primary_key=True)
-    thumbnail = Column(LargeBinary, nullable=True)
-    data = Column(LargeBinary, nullable=True)
+    thumbnail = deferred(Column(LargeBinary, nullable=True))
+    data = deferred(Column(LargeBinary, nullable=True))
 
     def __repr__(self):
         return f"<Canvas {self.id}>"

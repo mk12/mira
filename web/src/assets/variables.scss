@@ -3,10 +3,12 @@ $app-size: 500px;
 $action: #0076b7;
 $backdrop: #f2fbff;
 $background: #fcfaed;
+$dark-background: #f2efe1;
 $disabled: #999;
 $error: #f77;
 $foreground: #222;
 $subtle: #94c5df;
+$success: #40bc61;
 $white: #fff;
 
 @function asset($path) {

@@ -30,9 +30,9 @@
           <slot name="extra" :form="form" />
         </div>
       </div>
-      <div v-if="errorMessage" class="form-group">
+      <div v-if="message" class="form-group">
         <div class="form-group__item">
-          <p class="error-message">{{ errorMessage }}</p>
+          <p :class="messageClass">{{ message.text }}</p>
         </div>
       </div>
     </form>
@@ -40,6 +40,8 @@
 </template>
 
 <script>
+import { formError } from "@/util";
+
 export default {
   name: "BasicForm",
 
@@ -72,7 +74,7 @@ export default {
     }
     return {
       form,
-      errorMessage: null,
+      message: null,
       submitting: false
     };
   },
@@ -80,21 +82,29 @@ export default {
   computed: {
     submitValue() {
       return this.submitting ? "..." : this.action;
+    },
+
+    messageClass() {
+      return {
+        "success-message": !this.message.error,
+        "error-message": this.message.error
+      };
     }
   },
 
   methods: {
     validateForm() {
-      this.errorMessage = null;
+      let error = null;
       for (let field of this.fields) {
         let input = this.form[field.id];
         input.error = field.required && !input.value;
         if (input.error) {
-          this.errorMessage = this.errorMessage || field.required;
+          error = error || field.required;
         }
       }
-      this.errorMessage = this.errorMessage || this.validate(this.form);
-      return !this.errorMessage;
+      error = error || this.validate(this.form);
+      this.message = error ? formError(error) : null;
+      return !error;
     },
 
     async submitForm() {
@@ -103,7 +113,7 @@ export default {
         try {
           let result = await this.submit(this.form);
           if (result) {
-            this.errorMessage = result;
+            this.message = result;
           }
         } finally {
           this.submitting = false;

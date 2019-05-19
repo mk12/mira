@@ -35,6 +35,21 @@ async function register(username, password) {
   await api.post("register", { username, password });
 }
 
+// Changes the password on the current account and logs out.
+async function changePassword(oldPassword, newPassword) {
+  await api.put("change_password", {
+    password: oldPassword,
+    new_password: newPassword
+  });
+  store.commit("logout");
+}
+
+// Deletes the current account and logs out.
+async function deleteAccount(password) {
+  await api.delete("account", { data: { password } });
+  store.commit("logout");
+}
+
 // Logs out the current user.
 async function logout() {
   await api.post("logout");
@@ -46,5 +61,7 @@ export default {
   autoLogin,
   login,
   register,
+  changePassword,
+  deleteAccount,
   logout
 };

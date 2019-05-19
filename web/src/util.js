@@ -2,7 +2,7 @@ export function isDevelopment() {
   return process.env.NODE_ENV === "development";
 }
 
-export function isStatus(error, status) {
+export function errorStatusIs(error, status) {
   return (
     error.response !== undefined &&
     error.response.status !== undefined &&
@@ -10,7 +10,7 @@ export function isStatus(error, status) {
   );
 }
 
-export function isCode(error, code) {
+export function errorCodeIs(error, code) {
   return (
     error.response !== undefined &&
     error.response.data !== undefined &&
@@ -18,14 +18,22 @@ export function isCode(error, code) {
   );
 }
 
-export function errorMessage(error) {
-  if (isCode(error, "login_fail")) {
+export function formSuccess(text) {
+  return { text };
+}
+
+export function formError(text) {
+  return { text, error: true };
+}
+
+export function genericFormError(error) {
+  if (errorCodeIs(error, "login_fail")) {
     return "Wrong username or password.";
   }
-  if (isCode(error, "username_taken")) {
+  if (errorCodeIs(error, "username_taken")) {
     return "Username is already taken.";
   }
-  if (isStatus(error, 429)) {
+  if (errorStatusIs(error, 429)) {
     return "Too many requests.";
   }
   return "An unknown error occurred.";

@@ -22,13 +22,13 @@
         style="vertical-align: -6%;"
       />
     </p>
-    <ul class="horiz-buttons">
-      <li class="horiz-buttons__item">
+    <ul class="horiz-list">
+      <li class="horiz-list__item">
         <router-link to="/signup" tag="button" class="button"
           >Sign up</router-link
         >
       </li>
-      <li class="horiz-buttons__item">
+      <li class="horiz-list__item">
         <router-link to="/login" tag="button" class="button"
           >Log in</router-link
         >

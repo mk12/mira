@@ -2,7 +2,13 @@ import Vue from "vue";
 import Router from "vue-router";
 
 import auth from "@/auth";
+import store from "@/store";
 
+import AddFriend from "@/views/AddFriend.vue";
+import Canvas from "@/views/Canvas.vue";
+import ChangePassword from "@/views/ChangePassword.vue";
+import DeleteAccount from "@/views/DeleteAccount.vue";
+import Friend from "@/views/Friend.vue";
 import Index from "@/views/Index.vue";
 import LogIn from "@/views/LogIn.vue";
 import NotFound from "@/views/NotFound.vue";
@@ -17,7 +23,8 @@ let router = new Router({
     {
       path: "/",
       name: "index",
-      component: Index
+      component: Index,
+      meta: { dataRequired: true }
     },
     {
       path: "/signup",
@@ -37,28 +44,38 @@ let router = new Router({
       component: Settings,
       meta: { loginRequired: true }
     },
-    // {
-    //   path: "/friends",
-    //   name: "friends",
-    //   component: Friends,
-    //   meta: { loginRequired: true },
-    //   children: [
-    //     {
-    //       path: ":username",
-    //       name: "friend",
-    //       component: Friend,
-    //       meta: { loginRequired: true },
-    //       children: [
-    //         {
-    //           path: "canvas",
-    //           name: "canvas",
-    //           component: Canvas,
-    //           meta: { loginRequired: true }
-    //         }
-    //       ]
-    //     }
-    //   ]
-    // },
+    {
+      path: "/settings/add_friend",
+      name: "add_friend",
+      component: AddFriend,
+      meta: { loginRequired: true }
+    },
+    {
+      path: "/settings/change_password",
+      name: "change_password",
+      component: ChangePassword,
+      meta: { loginRequired: true }
+    },
+    {
+      path: "/settings/delete_account",
+      name: "delete_account",
+      component: DeleteAccount,
+      meta: { loginRequired: true }
+    },
+    {
+      path: "/friends/:username",
+      name: "friend",
+      component: Friend,
+      meta: { loginRequired: true, dataRequired: true },
+      props: true
+    },
+    {
+      path: "/friends/:username/canvas",
+      name: "canvas",
+      component: Canvas,
+      meta: { loginRequired: true },
+      props: true
+    },
     {
       path: "*",
       name: "404",
@@ -69,7 +86,8 @@ let router = new Router({
 
 router.beforeEach((to, from, next) => {
   if (
-    to.matched.some(record => record.meta.loginRequired) && !auth.isLoggedIn()
+    to.matched.some(record => record.meta.loginRequired) &&
+    !auth.isLoggedIn()
   ) {
     next({
       path: "/login",
@@ -77,6 +95,12 @@ router.beforeEach((to, from, next) => {
     });
   } else {
     next();
+  }
+});
+
+router.afterEach((to, from) => {
+  if (to.matched.some(record => record.meta.dataRequired)) {
+    store.dispatch("refresh");
   }
 });
 

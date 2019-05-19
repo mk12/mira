@@ -16,7 +16,7 @@
 <script>
 import auth from "@/auth";
 import { MIN_PASSWORD_LENGTH } from "@/constants";
-import { errorMessage, isCode } from "@/util";
+import { errorCodeIs, genericFormError } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
 
@@ -39,21 +39,21 @@ export default {
           type: "text",
           label: "Username",
           placeholder: "Choose a username",
-          required: "Please choose a username"
+          required: "Please choose a username."
         },
         {
           id: "password",
           type: "password",
           label: "Password",
           placeholder: "Choose a password",
-          required: "Please choose a password"
+          required: "Please choose a password."
         },
         {
           id: "passwordConfirm",
           type: "password",
           label: "Confirm",
           placeholder: "Confirm password",
-          required: "Please confirm password"
+          required: "Please confirm password."
         }
       ]
     };
@@ -86,10 +86,10 @@ export default {
         await auth.register(form.username.value, form.password.value);
         await auth.login(form.username.value, form.password.value);
       } catch (error) {
-        if (isCode(error, "username_taken")) {
+        if (errorCodeIs(error, "username_taken")) {
           form.username.error = true;
         }
-        return errorMessage(error);
+        return genericFormError(error);
       }
       this.$router.push(this.$route.query.redirect || "/");
     }

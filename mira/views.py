@@ -93,10 +93,10 @@ def register():
     return ok("register", "Registered account")
 
 
-@app.route("/api/reset_password", methods=["PUT"])
+@app.route("/api/change_password", methods=["PUT"])
 @login_required
 @logged_in_limit
-def reset_password():
+def change_password():
     password, new_password = get_fields("password", "new_password")
     user = current_user
     if not user.check_password(password):
@@ -106,7 +106,7 @@ def reset_password():
     db.session.add(user)
     db.session.commit()
     logout_user()
-    return ok("reset", "Reset password and logged out")
+    return ok("change", "Changed password and logged out")
 
 
 @app.route("/api/account", methods=["DELETE"])
@@ -181,6 +181,13 @@ def get_friends():
         incoming_requests=serialize(current_user.incoming_friend_requests()),
         outgoing_requests=serialize(current_user.outgoing_friend_requests()),
     )
+
+
+@app.route("/api/friends_data")
+@login_required
+@logged_in_limit
+def get_friends_data():
+    return jsonify(friends=current_user.friends_data())
 
 
 @app.route("/api/friends/<username>/canvas")

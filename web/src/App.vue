@@ -9,7 +9,9 @@
           </li>
           <template v-if="isLoggedIn()">
             <li class="nav-list__item">
-              <router-link to="/settings" class="nav-link">Settings</router-link>
+              <router-link to="/settings" class="nav-link"
+                >Settings</router-link
+              >
             </li>
             <li class="nav-list__item">
               <a href="#" class="nav-link" @click.prevent="logout()">Log out</a>

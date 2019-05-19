@@ -15,12 +15,24 @@ body {
   margin: 75px 50px;
 }
 
+.center-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
 h1, p, ul {
   margin-bottom: 1em;
 }
 
 h1 {
   font-size: 28px;
+  font-weight: bold;
+}
+
+strong {
   font-weight: bold;
 }
 
@@ -53,6 +65,12 @@ a {
     color: $disabled;
     border-color: $disabled;
   }
+
+  &--inline {
+    font-size: 0.8em;
+    padding: 1px 6px;
+    margin: 0 5px;
+  }
 }
 
 .bullets {
@@ -69,7 +87,7 @@ a {
   }
 }
 
-.horiz-buttons {
+.horiz-list {
   text-align: center;
 
   &__item {
@@ -78,7 +96,7 @@ a {
   }
 }
 
-.vert-buttons {
+.vert-list {
   text-align: center;
 
   &__item {
@@ -118,6 +136,10 @@ a {
   &--error {
     border-bottom-color: $error;
   }
+}
+
+.success-message {
+  color: $success;
 }
 
 .error-message {

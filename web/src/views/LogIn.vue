@@ -17,7 +17,7 @@
 
 <script>
 import auth from "@/auth";
-import { errorMessage } from "@/util";
+import { genericFormError } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
 
@@ -40,14 +40,14 @@ export default {
           type: "text",
           label: "Username",
           placeholder: "Enter username",
-          required: "Please enter a username"
+          required: "Please enter a username."
         },
         {
           id: "password",
           type: "password",
           label: "Password",
           placeholder: "Enter password",
-          required: "Please enter a password"
+          required: "Please enter a password."
         }
       ]
     };
@@ -66,7 +66,7 @@ export default {
       try {
         await auth.login(form.username.value, form.password.value);
       } catch (error) {
-        return errorMessage(error);
+        return genericFormError(error);
       }
       this.$router.push(this.$route.query.redirect || "/");
     }
