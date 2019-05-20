@@ -1,7 +1,10 @@
 <template>
   <div class="text-page">
     <h1>Settings</h1>
-    <p>Here are the settings you can manage:</p>
+    <p>
+      You are currently logged in as <strong>{{ username }}</strong
+      >.
+    </p>
     <ul class="vert-list">
       <li class="vert-list__item">
         <router-link to="/settings/add_friend">Add friends</router-link>
@@ -19,7 +22,13 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 export default {
-  name: "Settings"
+  name: "Settings",
+
+  computed: {
+    ...mapState(["username"])
+  }
 };
 </script>

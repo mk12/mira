@@ -16,7 +16,7 @@
 <script>
 import auth from "@/auth";
 import { MIN_PASSWORD_LENGTH } from "@/constants";
-import { errorCodeIs, genericFormError } from "@/util";
+import { errorCode, genericFormError } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
 
@@ -86,7 +86,7 @@ export default {
         await auth.register(form.username.value, form.password.value);
         await auth.login(form.username.value, form.password.value);
       } catch (error) {
-        if (errorCodeIs(error, "username_taken")) {
+        if (errorCode(error) === "username_taken") {
           form.username.error = true;
         }
         return genericFormError(error);

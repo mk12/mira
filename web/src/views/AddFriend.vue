@@ -3,12 +3,24 @@
     <template #instructions>
       Enter the username of the friend you wish to add.
     </template>
+    <template #message>
+      {{ message }}
+      <router-link :to="{ name: 'friend', params: { username } }">{{
+        username
+      }}</router-link
+      >.
+    </template>
   </BasicForm>
 </template>
 
 <script>
 import api from "@/api";
-import { errorCodeIs, formError, formSuccess, genericFormError } from "@/util";
+import {
+  errorCode,
+  formError,
+  formSuccessSlot,
+  genericFormError
+} from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
 
@@ -29,30 +41,46 @@ export default {
           placeholder: "Enter friend's username",
           required: "Please enter a username."
         }
-      ]
+      ],
+      message: null,
+      usagename: null
     };
   },
 
   methods: {
     async submit(form) {
       let username = form.username.value;
+      let response;
       try {
-        let response = await api.put(`friends/${encodeURIComponent(username)}`);
-        if (response.data.code === "accept") {
-          return formSuccess(`Became friends with ${username}.`);
-        }
-        return formSuccess(`Sent friend request to ${username}.`);
+        response = await api.put(`friends/${encodeURIComponent(username)}`);
       } catch (error) {
-        if (errorCodeIs(error, "unknown_user")) {
-          return formError("There is no one with that username.");
+        switch (errorCode(error)) {
+          case "unknown_user":
+            return formError("There is no one with that username.");
+          case "self":
+            return formError("You cannot add yourself as a friend.");
+          case "maximum":
+            return formError("You already have the maximum number of friends.");
+          default:
+            return genericFormError(error);
         }
-        if (errorCodeIs(error, "self")) {
-          return formError("You cannot add yourself as a friend.");
-        }
-        if (errorCodeIs(error, "maximum")) {
-          return formError("You already have the maximum number of friends.");
-        }
-        return genericFormError(error);
+      }
+      this.username = username;
+      switch (response.data.code) {
+        case "accept":
+          this.message = "Became friends with";
+          return formSuccessSlot();
+        case "request":
+          this.message = "Sent friend request to";
+          return formSuccessSlot();
+        case "no_op_accept":
+          this.message = "Already friends with";
+          return formSuccessSlot();
+        case "no_op_request":
+          this.message = "Already sent friend request to";
+          return formSuccessSlot();
+        default:
+          return formError("Unexpected server response.");
       }
     }
   }

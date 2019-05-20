@@ -32,7 +32,14 @@
       </div>
       <div v-if="message" class="form-group">
         <div class="form-group__item">
-          <p :class="messageClass">{{ message.text }}</p>
+          <p :class="messageClass">
+            <template v-if="message.slot">
+              <slot name="message" />
+            </template>
+            <template v-else>
+              {{ message.text }}
+            </template>
+          </p>
         </div>
       </div>
     </form>

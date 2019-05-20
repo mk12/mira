@@ -5,6 +5,7 @@ flask-migrate ~= 2.4
 flask-seasurf ~= 0.2
 flask-sqlalchemy ~= 2.4
 flask-talisman ~= 0.6
+humanize ~= 0.5
 psycopg2-binary ~= 2.8
 python-dotenv ~= 0.10
 sqlalchemy ~= 1.3

@@ -98,7 +98,7 @@ router.beforeEach((to, from, next) => {
   }
 });
 
-router.afterEach((to, from) => {
+router.afterEach(to => {
   if (to.matched.some(record => record.meta.dataRequired)) {
     store.dispatch("refresh");
   }

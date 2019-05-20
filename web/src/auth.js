@@ -1,6 +1,6 @@
 import api from "@/api";
 import store from "@/store";
-import { isDevelopment, isStatus } from "@/util";
+import { isDevelopment, errorStatus } from "@/util";
 
 // Returns true if we are logged in.
 function isLoggedIn() {
@@ -14,7 +14,7 @@ async function autoLogin() {
     try {
       window.miraUsername = (await api.get("check")).data.username;
     } catch (error) {
-      if (isStatus(error, 403)) {
+      if (errorStatus(error) === 401) {
         window.miraUsername = null;
       } else {
         throw error;

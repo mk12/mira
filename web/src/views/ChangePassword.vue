@@ -13,7 +13,7 @@
 <script>
 import auth from "@/auth";
 import { MIN_PASSWORD_LENGTH } from "@/constants";
-import { errorStatusIs, formError, genericFormError } from "@/util";
+import { errorStatus, formError, genericFormError } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
 
@@ -64,10 +64,12 @@ export default {
           form.newPassword.value
         );
       } catch (error) {
-        if (errorStatusIs(error, 401)) {
-          return formError("Invalid password.");
+        switch (errorStatus(error)) {
+          case 401:
+            return formError("Invalid password.");
+          default:
+            return genericFormError(error);
         }
-        return genericFormError(error);
       }
       this.$router.push(this.$route.query.redirect || "/login");
     }

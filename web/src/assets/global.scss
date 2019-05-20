@@ -17,7 +17,7 @@ body {
 
 .center-box {
   display: flex;
-  flex-direction: column;
+  flex-flow: column wrap;
   align-items: center;
   justify-content: center;
   height: 100%;
@@ -34,6 +34,10 @@ h1 {
 
 strong {
   font-weight: bold;
+}
+
+.small {
+  font-size: $small-font;
 }
 
 a {
@@ -67,7 +71,7 @@ a {
   }
 
   &--inline {
-    font-size: 0.8em;
+    font-size: $small-font;
     padding: 1px 6px;
     margin: 0 5px;
   }

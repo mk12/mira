@@ -132,16 +132,25 @@ def add_friend(username):
         return error(404, "unknown_user", "No user has that username")
     if user == current_user:
         return error(422, "self", "Self cannot be a friend")
-    if Friendship.between(current_user, user):
-        return ok("no_op", "Already sent friend request")
+    friendship = Friendship.between(current_user, user)
+    reverse_friendship = Friendship.between(user, current_user)
+    if friendship:
+        if reverse_friendship:
+            return ok("no_op_accept", "Already friends")
+        if friendship.ignored:
+            friendship.ignored = False
+            db.session.add(friendship)
+            db.session.commit()
+            return ok("request", "Sent friend request")
+        return ok("no_op_request", "Already sent friend request")
     if not current_user.can_add_friend():
         return error(422, "maximum", "Cannot add more friends")
     friendship = Friendship(current_user, user)
-    reverse_friendship = Friendship.between(user, current_user)
     if reverse_friendship:
         canvas = Canvas()
         friendship.canvas = canvas
         reverse_friendship.canvas = canvas
+        reverse_friendship.ignored = False
         db.session.add(reverse_friendship)
     db.session.add(friendship)
     db.session.commit()
@@ -160,13 +169,25 @@ def remove_friend(username):
     if user == current_user:
         return error(422, "self", "Self cannot be a friend")
     friendship = Friendship.between(current_user, user)
-    if not friendship:
-        return ok("no_op", "Not friends with that user")
-    db.session.delete(friendship)
-    db.session.commit()
-    if Friendship.between(user, current_user):
+    reverse_friendship = Friendship.between(user, current_user)
+    if friendship and reverse_friendship:
+        reverse_friendship.ignored = True
+        db.session.add(reverse_friendship)
+        db.session.delete(friendship)
+        db.session.commit()
         return ok("unfriend", "Unfriended user")
-    return ok("revoke", "Revoked friend request")
+    if friendship and not reverse_friendship:
+        db.session.delete(friendship)
+        db.session.commit()
+        return ok("revoke", "Revoked friend request")
+    if not friendship and reverse_friendship:
+        if reverse_friendship.ignored:
+            return ok("no_op", "Already ignored friend request")
+        reverse_friendship.ignored = True
+        db.session.add(reverse_friendship)
+        db.session.commit()
+        return ok("ignore", "Ignored friend request")
+    return ok("no_op", "Not friends with that user")
 
 
 @app.route("/api/friends")

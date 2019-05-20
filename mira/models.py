@@ -1,8 +1,10 @@
 """This module defines the data models for Mira."""
 
+from datetime import datetime
 from uuid import uuid4
 
 from flask_login.mixins import UserMixin
+from humanize import naturaltime
 from sqlalchemy import CheckConstraint, Column, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import (
@@ -10,10 +12,9 @@ from sqlalchemy.orm import (
     deferred,
     joinedload,
     relationship,
-    undefer,
     validates,
 )
-from sqlalchemy.types import DateTime, Integer, LargeBinary, String
+from sqlalchemy.types import Boolean, DateTime, Integer, LargeBinary, String
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from mira.errors import InvalidAttribute
@@ -87,7 +88,7 @@ class User(BaseModel, UserMixin):
 
     def can_add_friend(self):
         """Return true if there is room for another friend."""
-        return len(self.friendees) < MAX_FRIENDS
+        return self.outgoing_friendships.count() < MAX_FRIENDS
 
     def friends(self):
         """Return friends of this user."""
@@ -106,13 +107,20 @@ class User(BaseModel, UserMixin):
 
     def friends_data(self):
         """Return friends and associated data."""
+
+        def serialize_time(friendship):
+            time = naturaltime(datetime.now() - friendship.updated_at)
+            if time == "now":
+                return "just now"
+            return time
+
         outgoing = self.outgoing_friendships.options(
             joinedload(Friendship.friendee),
-            joinedload(Friendship.canvas).undefer(Canvas.thumbnail)
+            joinedload(Friendship.canvas).undefer(Canvas.thumbnail),
         )
         incoming = self.incoming_friendships.options(
             joinedload(Friendship.friender)
-        )
+        ).filter_by(ignored=False)
         incoming_ids = {friendship.friender_id for friendship in incoming}
         friends = []
         only_outgoing = []
@@ -123,17 +131,17 @@ class User(BaseModel, UserMixin):
                     {
                         "username": friendship.friendee.username,
                         "state": "friend",
-                        "time": friendship.updated_at,
+                        "time": serialize_time(friendship),
                         "thumbnail": friendship.canvas.thumbnail,
                     }
                 )
-                incoming_ids.remove(friendship.friender_id)
+                incoming_ids.remove(friendship.friendee_id)
             else:
                 only_outgoing.append(
                     {
                         "username": friendship.friendee.username,
                         "state": "outgoing",
-                        "time": friendship.updated_at,
+                        "time": serialize_time(friendship),
                     }
                 )
         for friendship in incoming:
@@ -142,13 +150,16 @@ class User(BaseModel, UserMixin):
                     {
                         "username": friendship.friender.username,
                         "state": "incoming",
-                        "time": friendship.updated_at,
+                        "time": serialize_time(friendship),
                     }
                 )
-        sort_key = lambda record: record["username"]
-        friends.sort(key=sort_key)
-        only_outgoing.sort(key=sort_key)
-        only_incoming.sort(key=sort_key)
+
+        def by_username(record):
+            return record["username"]
+
+        friends.sort(key=by_username)
+        only_outgoing.sort(key=by_username)
+        only_incoming.sort(key=by_username)
         return friends + only_outgoing + only_incoming
 
     def __eq__(self, other):
@@ -173,6 +184,7 @@ class Friendship(BaseModel):
         Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )
     canvas_id = Column(Integer, ForeignKey("canvases.id", ondelete="SET NULL"))
+    ignored = Column(Boolean, nullable=False, default=False)
 
     friender = relationship(
         "User",

@@ -8,8 +8,9 @@ Vue.use(Vuex);
 export default new Vuex.Store({
   state: {
     username: null,
-    loading: true,
-    friendList: null
+    loaded: false,
+    loadError: false,
+    friendList: []
   },
 
   getters: {
@@ -17,12 +18,16 @@ export default new Vuex.Store({
       return !!state.username;
     },
 
-    friends(state, username) {
+    friends(state) {
       let map = {};
       for (let f of state.friendList) {
         map[f.username] = f;
       }
       return map;
+    },
+
+    confirmedFriends(state) {
+      return state.friendList.filter(f => f.state === "friend");
     },
 
     incomingRequests(state) {
@@ -31,10 +36,6 @@ export default new Vuex.Store({
 
     outgoingRequests(state) {
       return state.friendList.filter(f => f.state === "outgoing");
-    },
-
-    confirmedFriends(state) {
-      return state.friendList.filter(f => f.state === "friend");
     }
   },
 
@@ -45,19 +46,23 @@ export default new Vuex.Store({
 
     logout(state) {
       state.username = null;
+      state.loaded = false;
+      state.loadError = false;
+      state.friendList = [];
     },
 
     loadError(state) {
-      state.loading = "error";
+      state.loadError = true;
     },
 
     loadSuccess(state, friends) {
-      state.loading = false;
+      state.loaded = true;
       state.friendList = [
         {
           username: "alice",
           state: "friend",
-          canvas: "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
+          canvas:
+            "iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg=="
         },
         {
           username: "tracy",
@@ -71,7 +76,7 @@ export default new Vuex.Store({
         },
         {
           username: "dragosword2",
-          state: "incoming",
+          state: "outgoing",
           canvas: null
         },
         {
@@ -81,7 +86,7 @@ export default new Vuex.Store({
         },
         {
           username: "bob",
-          state: "outgoing",
+          state: "incoming",
           canvas: null
         }
       ];
@@ -92,7 +97,6 @@ export default new Vuex.Store({
   actions: {
     async refresh({ commit, getters }) {
       if (!getters.isLoggedIn) {
-        commit("loadError");
         return;
       }
       let response;
