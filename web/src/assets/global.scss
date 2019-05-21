@@ -75,6 +75,28 @@ a {
     padding: 1px 6px;
     margin: 0 5px;
   }
+
+  &--submitting {
+    margin: 0 auto;
+    padding: 0;
+    width: 19px;
+    height: 19px;
+    padding: 0;
+    border-radius: 50%;
+    border: 4px solid $action;
+    border-color: transparent $disabled transparent $disabled !important;
+    background: transparent;
+    animation: dual-ring 1.2s linear infinite;
+
+    @keyframes dual-ring {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+  }
 }
 
 .bullets {
@@ -148,4 +170,24 @@ a {
 
 .error-message {
   color: $error;
+}
+
+.abrupt-fade {
+  &-enter {
+    opacity: 0;
+  }
+
+  &-enter-active {
+    transition: opacity 0.5s;
+  }
+}
+
+.cross-fade {
+  &-enter, &-leave-to {
+    opacity: 0;
+  }
+
+  &-enter-active, &-leave-active {
+    transition: opacity 0.3s;
+  }
 }

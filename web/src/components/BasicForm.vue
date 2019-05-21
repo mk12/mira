@@ -19,29 +19,31 @@
 
       <div class="form-group">
         <div class="form-group__item">
-          <input
-            type="submit"
+          <button
+            ref="submitButton"
             class="button"
-            :value="submitValue"
+            :style="submitDimensions"
             :disabled="submitting"
-          />
+            ><template v-if="!submitting">{{ action }}</template><div v-else class="button--submitting"></div></button>
         </div>
         <div v-if="!!this.$scopedSlots.extra" class="form-group__item">
           <slot name="extra" :form="form" />
         </div>
       </div>
-      <div v-if="message" class="form-group">
-        <div class="form-group__item">
-          <p :class="messageClass">
-            <template v-if="message.slot">
-              <slot name="message" />
-            </template>
-            <template v-else>
-              {{ message.text }}
-            </template>
-          </p>
+      <transition name="abrupt-fade" appear>
+        <div v-if="message" :key="messageKey" class="form-group">
+          <div class="form-group__item">
+            <p :class="messageClass">
+              <template v-if="message.slot">
+                <slot name="message" />
+              </template>
+              <template v-else>
+                {{ message.text }}
+              </template>
+            </p>
+          </div>
         </div>
-      </div>
+      </transition>
     </form>
   </div>
 </template>
@@ -82,15 +84,20 @@ export default {
     return {
       form,
       message: null,
-      submitting: false
+      messageKey: 0,
+      submitting: false,
+      submitDimensions: {}
+    };
+  },
+
+  mounted() {
+    this.submitDimensions = {
+      width: `${this.$refs.submitButton.clientWidth + 5}px`,
+      height: `${this.$refs.submitButton.clientHeight}px`
     };
   },
 
   computed: {
-    submitValue() {
-      return this.submitting ? "..." : this.action;
-    },
-
     messageClass() {
       return {
         "success-message": !this.message.error,
@@ -111,6 +118,7 @@ export default {
       }
       error = error || this.validate(this.form);
       this.message = error ? formError(error) : null;
+      this.messageKey++;
       return !error;
     },
 
@@ -121,6 +129,7 @@ export default {
           let result = await this.submit(this.form);
           if (result) {
             this.message = result;
+            this.messageKey++;
           }
         } finally {
           this.submitting = false;

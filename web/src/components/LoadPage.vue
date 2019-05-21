@@ -1,9 +1,13 @@
 <template>
   <div class="loading-wrapper">
-    <div v-if="!loaded" class="center-box">
-      <p :class="{ 'error-message': loadError }">{{ loadingMessage }}</p>
-    </div>
-    <slot v-else />
+    <transition name="abrupt-fade" appear>
+      <div v-if="!loaded" key="loading" class="center-box">
+        <p :class="{ 'error-message': loadError }">{{ loadingMessage }}</p>
+      </div>
+      <div v-else key="content" class="loading-wrapper">
+        <slot />
+      </div>
+    </transition>
   </div>
 </template>
 

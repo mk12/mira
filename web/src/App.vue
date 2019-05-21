@@ -1,7 +1,9 @@
 <template>
   <div class="wrapper">
     <div class="container">
-      <router-view class="container__content" />
+      <transition name="cross-fade">
+        <router-view :key="routerKey" class="container__content" />
+      </transition>
       <nav class="container__navigation">
         <ul class="nav-list">
           <li class="nav-list__item">
@@ -14,7 +16,7 @@
               >
             </li>
             <li class="nav-list__item">
-              <a href="#" class="nav-link" @click.prevent="logout()">Log out</a>
+              <a href="#" class="nav-link" @click.prevent="logout">Log out</a>
             </li>
           </template>
           <template v-else>
@@ -32,10 +34,18 @@
 </template>
 
 <script>
+import { mapState } from "vuex";
+
 import auth from "@/auth";
 
 export default {
   name: "App",
+
+  computed: {
+    ...mapState([
+      "routerKey"
+    ])
+  },
 
   methods: {
     isLoggedIn() {

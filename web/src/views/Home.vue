@@ -57,11 +57,13 @@ export default {
   display: flex;
   flex-flow: row wrap;
   justify-content: center;
+  align-items: center;
   align-content: center;
   height: 100%;
 
   &__item {
     margin: 15px;
+    flex-basis: fit-content;
   }
 }
 

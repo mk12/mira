@@ -10,7 +10,8 @@ export default new Vuex.Store({
     username: null,
     loaded: false,
     loadError: false,
-    friendList: []
+    friendList: [],
+    routerKey: 0
   },
 
   getters: {
@@ -91,6 +92,10 @@ export default new Vuex.Store({
         }
       ];
       state.friendList = friends;
+    },
+
+    reloadRoute(state) {
+      state.routerKey++;
     }
   },
 
@@ -107,6 +112,11 @@ export default new Vuex.Store({
         return;
       }
       commit("loadSuccess", response.data.friends);
+    },
+
+    async refreshPage({ commit, dispatch }) {
+      await dispatch("refresh");
+      commit("reloadRoute");
     }
   }
 });

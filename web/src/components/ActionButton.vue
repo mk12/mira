@@ -1,7 +1,11 @@
 <template>
-  <button class="button" :disabled="submitting" @click.prevent="click()">
-    {{ buttonLabel }}
-  </button>
+  <button
+    class="button"
+    :class="{ 'button--submitting': submitting }"
+    :disabled="submitting"
+    @click.prevent="click"
+    >{{ buttonLabel }}</button
+  >
 </template>
 
 <script>

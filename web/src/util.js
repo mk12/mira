@@ -32,5 +32,8 @@ export function genericFormError(error) {
   if (errorStatus(error) === 429) {
     return formError("Too many requests.");
   }
+  if (error.code === "ECONNABORTED") {
+    return formError("Request timed out.");
+  }
   return formError("An unknown error occurred.");
 }

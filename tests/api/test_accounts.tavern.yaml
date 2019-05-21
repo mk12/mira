@@ -203,22 +203,22 @@ stages:
 
 ---
 
-test_name: User can reset password
+test_name: User can change password
 
 stages:
   - *register_bob
   - *login_bob
 
-  - name: Reset password
+  - name: change password
     request:
-      url: "{host}/api/reset_password"
+      url: "{host}/api/change_password"
       method: PUT
       json:
         password: password
         new_password: new_password
     response:
       body:
-        code: reset
+        code: change
         message: !anything
 
   - *user_api_denied

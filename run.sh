@@ -180,7 +180,7 @@ EOS
     status=0
     MIRA_PORT=$port python3 -m pytest tests $pytest_filter || status=$?
     say "Stopping the flask test server"
-    run kill "$flask_pid"
+    kill "$flask_pid"
     stop_db
     return $status
 }

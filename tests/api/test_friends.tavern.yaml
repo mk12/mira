@@ -158,7 +158,7 @@ stages:
   - <<: *friend_alice
     response:
       body:
-        code: no_op
+        code: no_op_request
         message: !anything
 
   - *delete_bob
