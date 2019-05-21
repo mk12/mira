@@ -59,12 +59,12 @@ export default {
   methods: {
     async acceptRequest() {
       await api.put(`friends/${this.username}`);
-      await this.$store.dispatch("refresh");
+      await this.$store.dispatch("refresh", { fullPage: true });
     },
 
     async ignoreRequest() {
       await api.delete(`friends/${this.username}`);
-      await this.$store.dispatch("refresh");
+      await this.$store.dispatch("refresh", { fullPage: true });
     }
   }
 };

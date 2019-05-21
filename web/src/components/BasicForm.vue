@@ -19,12 +19,14 @@
 
       <div class="form-group">
         <div class="form-group__item">
-          <button
-            ref="submitButton"
-            class="button"
-            :style="submitDimensions"
-            :disabled="submitting"
-            ><template v-if="!submitting">{{ action }}</template><div v-else class="button--submitting"></div></button>
+          <button class="button" :disabled="submitting">
+            <div v-if="submitting" class="button__loader"></div>
+            <span
+              class="button__text"
+              :class="{ 'button__text--submitting': submitting }"
+              >{{ action }}</span
+            >
+          </button>
         </div>
         <div v-if="!!this.$scopedSlots.extra" class="form-group__item">
           <slot name="extra" :form="form" />
@@ -85,15 +87,7 @@ export default {
       form,
       message: null,
       messageKey: 0,
-      submitting: false,
-      submitDimensions: {}
-    };
-  },
-
-  mounted() {
-    this.submitDimensions = {
-      width: `${this.$refs.submitButton.clientWidth + 5}px`,
-      height: `${this.$refs.submitButton.clientHeight}px`
+      submitting: false
     };
   },
 

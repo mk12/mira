@@ -42,9 +42,7 @@ export default {
   name: "App",
 
   computed: {
-    ...mapState([
-      "routerKey"
-    ])
+    ...mapState(["routerKey"])
   },
 
   methods: {

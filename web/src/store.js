@@ -100,7 +100,7 @@ export default new Vuex.Store({
   },
 
   actions: {
-    async refresh({ commit, getters }) {
+    async refresh({ commit, getters }, options) {
       if (!getters.isLoggedIn) {
         return;
       }
@@ -112,11 +112,9 @@ export default new Vuex.Store({
         return;
       }
       commit("loadSuccess", response.data.friends);
-    },
-
-    async refreshPage({ commit, dispatch }) {
-      await dispatch("refresh");
-      commit("reloadRoute");
+      if (options && options.fullPage) {
+        commit("reloadRoute");
+      }
     }
   }
 });

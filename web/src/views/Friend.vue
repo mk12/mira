@@ -82,7 +82,7 @@ export default {
   methods: {
     async unfriend() {
       await api.delete(`friends/${encodeURIComponent(this.username)}`);
-      await this.$store.dispatch("refreshPage");
+      await this.$store.dispatch("refresh", { fullPage: true });
     },
 
     async friend() {
@@ -95,7 +95,7 @@ export default {
         }
         throw error;
       }
-      await this.$store.dispatch("refreshPage");
+      await this.$store.dispatch("refresh", { fullPage: true });
     }
   }
 };

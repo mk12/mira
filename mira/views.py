@@ -57,8 +57,6 @@ def check():
 @public_limit
 @username_limit
 def login():
-    import time
-    time.sleep(30)
     username, password = get_fields("username", "password")
     user = User.by_name(username)
     if not user or not user.check_password(password):
@@ -129,8 +127,6 @@ def delete_user():
 @login_required
 @logged_in_limit
 def add_friend(username):
-    import time
-    time.sleep(2)
     user = User.by_name(username)
     if not user:
         return error(404, "unknown_user", "No user has that username")
@@ -212,8 +208,6 @@ def get_friends():
 @login_required
 @logged_in_limit
 def get_friends_data():
-    import time
-    time.sleep(1)
     return jsonify(friends=current_user.friends_data())
 
 

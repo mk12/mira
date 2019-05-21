@@ -1,11 +1,12 @@
 <template>
-  <button
-    class="button"
-    :class="{ 'button--submitting': submitting }"
-    :disabled="submitting"
-    @click.prevent="click"
-    >{{ buttonLabel }}</button
-  >
+  <button class="button" :disabled="submitting" @click.prevent="click">
+    <div v-if="submitting" class="button__loader"></div>
+    <span
+      class="button__text"
+      :class="{ 'button__text--submitting': submitting }"
+      >{{ value }}</span
+    >
+  </button>
 </template>
 
 <script>
@@ -21,12 +22,6 @@ export default {
     return {
       submitting: false
     };
-  },
-
-  computed: {
-    buttonLabel() {
-      return this.submitting ? "..." : this.value;
-    }
   },
 
   methods: {

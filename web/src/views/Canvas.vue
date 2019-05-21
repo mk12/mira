@@ -7,7 +7,7 @@
     @mousedown="onMouseDown"
     @mouseup="onMouseUp"
     @mousemove="onMouseMove"
-    />
+  />
 </template>
 
 <script>
@@ -67,7 +67,7 @@ export default {
       return {
         x: parseInt(event.clientX - rect.left - canvas.clientLeft),
         y: parseInt(event.clientY - rect.top - canvas.clientTop)
-      }
+      };
     },
 
     onMouseDown(event) {
