@@ -2,9 +2,9 @@
 
 from datetime import datetime
 from uuid import uuid4
+import re
 
 from flask_login.mixins import UserMixin
-from humanize import naturaltime
 from sqlalchemy import CheckConstraint, Column, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import (
@@ -24,14 +24,24 @@ from mira.extensions import db
 MIN_PASSWORD_LENGTH = 8
 MAX_FRIENDS = 6
 
+USERNAME_REGEX = re.compile(r"^[a-zA-Z0-9-_]+$")
+
+SELF_STATE = "self"
+FRIEND_STATE = "friend"
+INCOMING_STATE = "incoming"
+OUTGOING_STATE = "outgoing"
+STRANGER_STATE = "stranger"
+
 
 class BaseModel(db.Model):
     """Base class for all models."""
 
     __abstract__ = True
 
-    created_at = Column(DateTime, default=db.func.now())
-    updated_at = Column(DateTime, default=db.func.now(), onupdate=db.func.now())
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
 
 class User(BaseModel, UserMixin):
@@ -79,6 +89,10 @@ class User(BaseModel, UserMixin):
     def validate_username(self, key, value):
         if not value:
             raise InvalidAttribute(key, value, "Username must be nonempty")
+        if not USERNAME_REGEX.match(value):
+            raise InvalidAttribute(
+                key, value, "Username contains invalid characters"
+            )
         return value
 
     @classmethod
@@ -105,15 +119,39 @@ class User(BaseModel, UserMixin):
         ids = {user.id for user in self.frienders}
         return [user for user in self.friendees if user.id not in ids]
 
-    def friends_data(self):
-        """Return friends and associated data."""
+    def serialize(self, state, friendship=None):
+        """Serialize this user with additional data."""
+        data = {"username": self.username, "state": state}
+        if friendship:
+            data["time"] = friendship.updated_at.isoformat() + "Z"
+        if state == FRIEND_STATE:
+            data["thumbnail"] = friendship.canvas.thumbnail
+        return data
 
-        def serialize_time(friendship):
-            time = naturaltime(datetime.now() - friendship.updated_at)
-            if time == "now":
-                return "just now"
-            return time
+    def friend_data(self, user):
+        """Return data about a particular friend."""
+        if self == user:
+            return user.serialize(SELF_STATE)
+        outgoing = (
+            Friendship.between(self, user, query=True)
+            .options(joinedload(Friendship.canvas).undefer(Canvas.thumbnail))
+            .first()
+        )
+        incoming = (
+            Friendship.between(user, self, query=True)
+            .filter_by(ignored=False)
+            .first()
+        )
+        if outgoing and incoming:
+            return user.serialize(FRIEND_STATE, outgoing)
+        if outgoing and not incoming:
+            return user.serialize(incoming_STATE, outgoing)
+        if not outgoing and incoming:
+            return user.serialize(outgoing_STATE, incoming)
+        return user.serialize(STRANGER_STATE)
 
+    def all_friends_data(self):
+        """Return data about all friends."""
         outgoing = self.outgoing_friendships.options(
             joinedload(Friendship.friendee),
             joinedload(Friendship.canvas).undefer(Canvas.thumbnail),
@@ -128,30 +166,17 @@ class User(BaseModel, UserMixin):
         for friendship in outgoing:
             if friendship.friendee_id in incoming_ids:
                 friends.append(
-                    {
-                        "username": friendship.friendee.username,
-                        "state": "friend",
-                        "time": serialize_time(friendship),
-                        "thumbnail": friendship.canvas.thumbnail,
-                    }
+                    friendship.friendee.serialize(FRIEND_STATE, friendship)
                 )
                 incoming_ids.remove(friendship.friendee_id)
             else:
                 only_outgoing.append(
-                    {
-                        "username": friendship.friendee.username,
-                        "state": "outgoing",
-                        "time": serialize_time(friendship),
-                    }
+                    friendship.friendee.serialize(OUTGOING_STATE, friendship)
                 )
         for friendship in incoming:
             if friendship.friender_id in incoming_ids:
                 only_incoming.append(
-                    {
-                        "username": friendship.friender.username,
-                        "state": "incoming",
-                        "time": serialize_time(friendship),
-                    }
+                    friendship.friender.serialize(INCOMING_STATE, friendship)
                 )
 
         def by_username(record):
@@ -213,11 +238,14 @@ class Friendship(BaseModel):
         self.friendee_id = friendee.id
 
     @classmethod
-    def between(cls, friender, friendee):
+    def between(cls, friender, friendee, query=False):
         """Return the friendship between two users, or None."""
-        return cls.query.filter_by(
+        filtered = cls.query.filter_by(
             friender_id=friender.id, friendee_id=friendee.id
-        ).first()
+        )
+        if query:
+            return filtered
+        return filtered.first()
 
     def __repr__(self):
         return f"<Friendship {self.friender_id},{self.friendee_id}>"

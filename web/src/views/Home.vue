@@ -1,22 +1,26 @@
 <template>
   <div class="text-page">
-    <LoadPage>
-      <div v-if="!friends.length" class="center-box">
-        <p class="friend-message">Friends will show up here!</p>
-        <router-link to="/settings/add_friend">Add friends</router-link>
-      </div>
-      <div v-else class="friend-grid">
-        <div
-          v-for="friend in friends"
-          :key="friend.username"
-          class="friend-grid__item"
-        >
-          <CanvasThumbnail :username="friend.username" />
-          <router-link :to="friendLink(friend)" class="small">{{
-            friend.username
-          }}</router-link>
+    <LoadPage :resource="{ loader: 'allFriends' }">
+      <template v-if="friends">
+        <div v-if="!friends.length" class="center-box">
+          <p class="friend-message">Friends will show up here!</p>
+          <router-link to="/settings/add_friend">Add friends</router-link>
         </div>
-      </div>
+        <div v-else class="friend-grid">
+          <div
+            v-for="friend in friends"
+            :key="friend.username"
+            class="friend-grid__item"
+          >
+            <CanvasThumbnail :username="friend.username" @respond="reload" />
+            <router-link
+              :to="{ name: 'friend', params: { username: friend.username } }"
+              class="small"
+              >{{ friend.username }}</router-link
+            >
+          </div>
+        </div>
+      </template>
     </LoadPage>
   </div>
 </template>
@@ -37,16 +41,17 @@ export default {
 
   computed: {
     friends() {
-      return this.$store.state.friendList.slice(0, MAX_FRIENDS);
+      let list = this.$store.getters["data/friendList"];
+      return list ? list.slice(0, MAX_FRIENDS) : null;
     }
   },
 
   methods: {
-    friendLink(friend) {
-      return {
-        name: "friend",
-        params: { username: friend.username }
-      };
+    async reload() {
+      await this.$store.dispatch("data/load", {
+        key: "friends",
+        rerender: true
+      });
     }
   }
 };

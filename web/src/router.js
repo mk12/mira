@@ -1,7 +1,6 @@
 import Vue from "vue";
 import Router from "vue-router";
 
-import auth from "@/auth";
 import store from "@/store";
 
 import AddFriend from "@/views/AddFriend.vue";
@@ -23,8 +22,7 @@ let router = new Router({
     {
       path: "/",
       name: "index",
-      component: Index,
-      meta: { dataRequired: true }
+      component: Index
     },
     {
       path: "/signup",
@@ -66,7 +64,7 @@ let router = new Router({
       path: "/friends/:username",
       name: "friend",
       component: Friend,
-      meta: { loginRequired: true, dataRequired: true },
+      meta: { loginRequired: true },
       props: true
     },
     {
@@ -87,7 +85,7 @@ let router = new Router({
 router.beforeEach((to, from, next) => {
   if (
     to.matched.some(record => record.meta.loginRequired) &&
-    !auth.isLoggedIn()
+    !store.getters["auth/isLoggedIn"]
   ) {
     next({
       path: "/login",
@@ -95,12 +93,6 @@ router.beforeEach((to, from, next) => {
     });
   } else {
     next();
-  }
-});
-
-router.afterEach(to => {
-  if (to.matched.some(record => record.meta.dataRequired)) {
-    store.dispatch("refresh");
   }
 });
 

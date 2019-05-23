@@ -123,6 +123,16 @@ def delete_user():
     return ok("delete", "Deleted account")
 
 
+@app.route("/api/friends/<username>")
+@login_required
+@logged_in_limit
+def get_friend(username):
+    user = User.by_name(username)
+    if not user:
+        return error(404, "unknown_user", "No user has that username")
+    return jsonify(current_user.friend_data(user))
+
+
 @app.route("/api/friends/<username>", methods=["PUT"])
 @login_required
 @logged_in_limit
@@ -182,12 +192,12 @@ def remove_friend(username):
         return ok("revoke", "Revoked friend request")
     if not friendship and reverse_friendship:
         if reverse_friendship.ignored:
-            return ok("no_op", "Already ignored friend request")
+            return ok("no_op_ignore", "Already ignored friend request")
         reverse_friendship.ignored = True
         db.session.add(reverse_friendship)
         db.session.commit()
         return ok("ignore", "Ignored friend request")
-    return ok("no_op", "Not friends with that user")
+    return ok("no_op_nothing", "Not friends with that user")
 
 
 @app.route("/api/friends")
@@ -208,7 +218,7 @@ def get_friends():
 @login_required
 @logged_in_limit
 def get_friends_data():
-    return jsonify(friends=current_user.friends_data())
+    return jsonify(current_user.all_friends_data())
 
 
 @app.route("/api/friends/<username>/canvas")

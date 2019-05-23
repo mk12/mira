@@ -1,12 +1,20 @@
 <template>
+  <div v-if="isLoggedIn" class="text-page">
+    <p>You are already logged in as <strong>{{ username }}</strong>!</p>
+    <ActionButton
+      :submit="logout"
+      value="Log out"
+      />
+  </div>
   <BasicForm
+    v-else
     title="Log in"
     action="Log in"
     v-bind="{ fields, submit, prefill }"
   >
-    <template #instructions>
-      Please enter your username and password.
-    </template>
+    <template #instructions
+      >Please enter your username and password.</template
+    >
     <template #extra="{ form }">
       <router-link :to="signupRoute(form)"
         >Want to create an account?</router-link
@@ -16,15 +24,18 @@
 </template>
 
 <script>
-import auth from "@/auth";
+import { mapActions, mapGetters, mapState } from "vuex";
+
 import { genericFormError } from "@/util";
 
+import ActionButton from "@/components/ActionButton.vue";
 import BasicForm from "@/components/BasicForm.vue";
 
 export default {
   name: "LogIn",
 
   components: {
+    ActionButton,
     BasicForm
   },
 
@@ -32,28 +43,33 @@ export default {
     prefill: Object
   },
 
-  data() {
-    return {
-      fields: [
-        {
-          id: "username",
-          type: "text",
-          label: "Username",
-          placeholder: "Enter username",
-          required: "Please enter a username."
-        },
-        {
-          id: "password",
-          type: "password",
-          label: "Password",
-          placeholder: "Enter password",
-          required: "Please enter a password."
-        }
-      ]
-    };
+  created() {
+    this.fields = [
+      {
+        id: "username",
+        type: "text",
+        label: "Username",
+        placeholder: "Enter username",
+        required: "Please enter a username."
+      },
+      {
+        id: "password",
+        type: "password",
+        label: "Password",
+        placeholder: "Enter password",
+        required: "Please enter a password."
+      }
+    ];
+  },
+
+  computed: {
+    ...mapGetters("auth", ["isLoggedIn"]),
+    ...mapState("auth", ["username"])
   },
 
   methods: {
+    ...mapActions("auth", ["logout"]),
+
     signupRoute(form) {
       return {
         name: "signup",
@@ -64,7 +80,10 @@ export default {
 
     async submit(form) {
       try {
-        await auth.login(form.username.value, form.password.value);
+        await this.$store.dispatch("auth/login", {
+          username: form.username.value,
+          password: form.password.value
+        });
       } catch (error) {
         return genericFormError(error);
       }

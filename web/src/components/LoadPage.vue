@@ -1,10 +1,10 @@
 <template>
-  <div class="loading-wrapper">
+  <div class="full-height">
     <transition name="abrupt-fade" appear>
-      <div v-if="!loaded" key="loading" class="center-box">
-        <p :class="{ 'error-message': loadError }">{{ loadingMessage }}</p>
+      <div v-if="status !== 'loaded'" key="loading" class="center-box">
+        <p :class="{ 'error-message': status === 'error' }">{{ message }}</p>
       </div>
-      <div v-else key="content" class="loading-wrapper">
+      <div v-else key="content" class="full-height">
         <slot />
       </div>
     </transition>
@@ -12,23 +12,32 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-
 export default {
   name: "LoadPage",
 
-  computed: {
-    ...mapState(["loaded", "loadError"]),
+  props: {
+    resource: Object
+  },
 
-    loadingMessage() {
-      return this.loadError ? "An unexpected error occurred." : "Loading ...";
+  computed: {
+    status() {
+      return this.resource
+        ? this.$store.getters["data/status"](this.resource)
+        : "loaded";
+    },
+
+    message() {
+      return this.status === "error"
+        ? "An unexpected error occurred."
+        : "Loading ...";
     }
+  },
+
+  async created() {
+    if (this.resource) {
+      await this.$store.dispatch("data/load", this.resource);
+    }
+    this.$emit("load");
   }
 };
 </script>
-
-<style lang="scss" scoped>
-.loading-wrapper {
-  height: 100%;
-}
-</style>

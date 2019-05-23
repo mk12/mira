@@ -1,40 +1,39 @@
 <template>
-  <canvas
-    ref="canvas"
-    :width="appSize"
-    :height="appSize"
-    class="canvas"
-    @mousedown="onMouseDown"
-    @mouseup="onMouseUp"
-    @mousemove="onMouseMove"
-  />
+  <LoadPage>
+    <canvas
+      ref="canvas"
+      :width="appSize"
+      :height="appSize"
+      class="canvas"
+      @mousedown="onMouseDown"
+      @mouseup="onMouseUp"
+      @mousemove="onMouseMove"
+    ></canvas>
+  </LoadPage>
 </template>
 
 <script>
 import { APP_SIZE, IDLE_SYNC_TIME, PERIODIC_SYNC_TIME } from "@/constants";
 
+import LoadPage from "@/components/LoadPage.vue";
+
 export default {
   name: "Canvas",
+
+  components: {
+    LoadPage
+  },
 
   props: {
     username: String
   },
 
-  data() {
-    return {
-      canvas: null,
-      context: null,
-      mouseDown: false,
-      lastPosition: {},
-      idleTimeout: null,
-      syncTimeout: null
-    };
-  },
-
-  computed: {
-    appSize() {
-      return APP_SIZE;
-    }
+  created() {
+    this.appSize = APP_SIZE;
+    this.mouseDown = false;
+    this.lastPosition = {};
+    this.idleTimeout = null;
+    this.syncTimeout = null;
   },
 
   mounted() {
@@ -43,6 +42,7 @@ export default {
   },
 
   beforeDestroy() {
+    // consider vue-timers
     this.clearTimeouts();
   },
 

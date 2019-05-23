@@ -23,6 +23,10 @@ body {
   height: 100%;
 }
 
+.full-height {
+  height: 100%;
+}
+
 h1, p, ul {
   margin-bottom: 1em;
 }
@@ -199,6 +203,6 @@ a {
   }
 
   &-enter-active, &-leave-active {
-    transition: opacity 0.3s;
+    transition: opacity 3s;
   }
 }

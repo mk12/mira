@@ -4,7 +4,6 @@ import "@/assets/global.scss";
 
 import Vue from "vue";
 
-import auth from "@/auth";
 import router from "@/router";
 import store from "@/store";
 
@@ -18,4 +17,4 @@ function main() {
   }).$mount("#app");
 }
 
-auth.autoLogin().finally(main);
+store.dispatch("auth/autoLogin").finally(main);

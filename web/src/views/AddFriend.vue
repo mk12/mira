@@ -1,10 +1,10 @@
 <template>
   <BasicForm title="Add friend" action="Add friend" v-bind="{ fields, submit }">
-    <template #instructions>
-      Enter the username of the friend you wish to add.
-    </template>
-    <template #message>
-      {{ message }}
+    <template #instructions
+      >Enter the username of the friend you wish to add.</template
+    >
+    <template #message
+      >{{ message }}
       <router-link :to="{ name: 'friend', params: { username } }">{{
         username
       }}</router-link
@@ -31,19 +31,22 @@ export default {
     BasicForm
   },
 
+  created() {
+    this.fields = [
+      {
+        id: "username",
+        type: "text",
+        label: "Username",
+        placeholder: "Enter friend's username",
+        required: "Please enter a username."
+      }
+    ];
+  },
+
   data() {
     return {
-      fields: [
-        {
-          id: "username",
-          type: "text",
-          label: "Username",
-          placeholder: "Enter friend's username",
-          required: "Please enter a username."
-        }
-      ],
       message: null,
-      usagename: null
+      username: null
     };
   },
 
@@ -52,7 +55,7 @@ export default {
       let username = form.username.value;
       let response;
       try {
-        response = await api.put(`friends/${encodeURIComponent(username)}`);
+        response = await api.put("friends/" + encodeURIComponent(username));
       } catch (error) {
         switch (errorCode(error)) {
           case "unknown_user":
@@ -65,6 +68,7 @@ export default {
             return genericFormError(error);
         }
       }
+
       this.username = username;
       switch (response.data.code) {
         case "accept":

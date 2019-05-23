@@ -4,9 +4,9 @@
     action="Register"
     v-bind="{ fields, validate, submit, prefill }"
   >
-    <template #instructions>
-      Please choose a username and password.
-    </template>
+    <template #instructions
+      >Please choose a username and password.</template
+    >
     <template #extra="{ form }">
       <router-link :to="loginRoute(form)">Already have an account?</router-link>
     </template>
@@ -14,8 +14,8 @@
 </template>
 
 <script>
-import auth from "@/auth";
-import { MIN_PASSWORD_LENGTH } from "@/constants";
+import api from "@/api";
+import { MIN_PASSWORD_LENGTH, USERNAME_REGEX } from "@/constants";
 import { errorCode, genericFormError } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
@@ -31,32 +31,30 @@ export default {
     prefill: Object
   },
 
-  data() {
-    return {
-      fields: [
-        {
-          id: "username",
-          type: "text",
-          label: "Username",
-          placeholder: "Choose a username",
-          required: "Please choose a username."
-        },
-        {
-          id: "password",
-          type: "password",
-          label: "Password",
-          placeholder: "Choose a password",
-          required: "Please choose a password."
-        },
-        {
-          id: "passwordConfirm",
-          type: "password",
-          label: "Confirm",
-          placeholder: "Confirm password",
-          required: "Please confirm password."
-        }
-      ]
-    };
+  created() {
+    this.fields = [
+      {
+        id: "username",
+        type: "text",
+        label: "Username",
+        placeholder: "Choose a username",
+        required: "Please choose a username."
+      },
+      {
+        id: "password",
+        type: "password",
+        label: "Password",
+        placeholder: "Choose a password",
+        required: "Please choose a password."
+      },
+      {
+        id: "passwordConfirm",
+        type: "password",
+        label: "Confirm",
+        placeholder: "Confirm password",
+        required: "Please confirm password."
+      }
+    ];
   },
 
   methods: {
@@ -69,6 +67,10 @@ export default {
     },
 
     validate(form) {
+      if (!USERNAME_REGEX.test(form.username.value)) {
+        form.username.error = true;
+        return "Username contains invalid characters.";
+      }
       if (form.password.value !== form.passwordConfirm.value) {
         form.password.error = true;
         form.passwordConfirm.error = true;
@@ -83,8 +85,12 @@ export default {
 
     async submit(form) {
       try {
-        await auth.register(form.username.value, form.password.value);
-        await auth.login(form.username.value, form.password.value);
+        let credentials = {
+          username: form.username.value,
+          password: form.password.value
+        };
+        await api.post("register", credentials);
+        await this.$store.dispatch("auth/login", credentials);
       } catch (error) {
         if (errorCode(error) === "username_taken") {
           form.username.error = true;

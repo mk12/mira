@@ -7,9 +7,7 @@
           :src="'data:image/jpg;base64,' + user.canvas"
           class="thumbnail thumbnail--enabled"
         />
-        <div v-else class="thumbnail thumbnail--enabled center-box">
-          Draw!
-        </div>
+        <div v-else class="thumbnail thumbnail--enabled center-box">Draw!</div>
       </router-link>
     </template>
     <template v-else>
@@ -26,9 +24,9 @@
             class="button--inline thumbnail__button"
           />
         </template>
-        <template v-else-if="user.state === 'outgoing'">
-          Pending
-        </template>
+        <template v-else-if="user.state === 'outgoing'"
+          >Pending</template
+        >
       </div>
     </template>
   </div>
@@ -42,29 +40,29 @@ import ActionButton from "@/components/ActionButton.vue";
 export default {
   name: "CanvasThumbnail",
 
-  props: {
-    username: String
-  },
-
   components: {
     ActionButton
   },
 
+  props: {
+    username: String
+  },
+
   computed: {
     user() {
-      return this.$store.getters.friends[this.username];
+      return this.$store.getters["data/getFriend"](this.username);
     }
   },
 
   methods: {
     async acceptRequest() {
-      await api.put(`friends/${this.username}`);
-      await this.$store.dispatch("refresh", { fullPage: true });
+      await api.put("friends/" + encodeURIComponent(this.username));
+      this.$emit("respond");
     },
 
     async ignoreRequest() {
-      await api.delete(`friends/${this.username}`);
-      await this.$store.dispatch("refresh", { fullPage: true });
+      await api.delete("friends/" + encodeURIComponent(this.username));
+      this.$emit("respond");
     }
   }
 };

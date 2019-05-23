@@ -28,7 +28,7 @@ export default {
   name: "Settings",
 
   computed: {
-    ...mapState(["username"])
+    ...mapState("auth", ["username"])
   }
 };
 </script>

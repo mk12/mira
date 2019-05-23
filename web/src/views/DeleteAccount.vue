@@ -4,14 +4,14 @@
     action="Delete my account"
     v-bind="{ fields, submit }"
   >
-    <template #instructions>
-      Please confirm your password.
-    </template>
+    <template #instructions
+      >Please confirm your password.</template
+    >
   </BasicForm>
 </template>
 
 <script>
-import auth from "@/auth";
+import api from "@/api";
 import { errorStatus, formError, genericFormError } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
@@ -23,24 +23,25 @@ export default {
     BasicForm
   },
 
-  data() {
-    return {
-      fields: [
-        {
-          id: "password",
-          type: "password",
-          label: "Password",
-          placeholder: "Enter password",
-          required: "Please enter your password."
-        }
-      ]
-    };
+  created() {
+    this.fields = [
+      {
+        id: "password",
+        type: "password",
+        label: "Password",
+        placeholder: "Enter password",
+        required: "Please enter your password."
+      }
+    ];
   },
 
   methods: {
     async submit(form) {
       try {
-        await auth.deleteAccount(form.password.value);
+        await api.delete("account", {
+          data: { password: form.password.value }
+        });
+        await this.$store.dispatch("auth/logout", { skipServer: true });
       } catch (error) {
         switch (errorStatus(error)) {
           case 401:

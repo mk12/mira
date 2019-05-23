@@ -2,14 +2,14 @@
   <div class="wrapper">
     <div class="container">
       <transition name="cross-fade">
-        <router-view :key="routerKey" class="container__content" />
+        <router-view class="container__content" />
       </transition>
       <nav class="container__navigation">
         <ul class="nav-list">
           <li class="nav-list__item">
             <router-link to="/" class="nav-link">Home</router-link>
           </li>
-          <template v-if="isLoggedIn()">
+          <template v-if="isLoggedIn">
             <li class="nav-list__item">
               <router-link to="/settings" class="nav-link"
                 >Settings</router-link
@@ -34,31 +34,25 @@
 </template>
 
 <script>
-import { mapState } from "vuex";
-
-import auth from "@/auth";
+import { mapGetters, mapState } from "vuex";
 
 export default {
   name: "App",
 
   computed: {
-    ...mapState(["routerKey"])
+    ...mapGetters("auth", ["isLoggedIn"])
   },
 
   methods: {
-    isLoggedIn() {
-      return auth.isLoggedIn();
-    },
-
     async logout() {
-      await auth.logout();
+      await this.$store.dispatch("auth/logout");
       this.$router.push("/");
     }
   }
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .wrapper {
   min-width: 100%;
   min-height: 100%;

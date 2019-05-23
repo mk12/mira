@@ -3,15 +3,9 @@
     <h1>Welcome to Mira</h1>
     <p>Mira is a fun and simple communication app.</p>
     <ul class="bullets">
-      <li class="bullets__item">
-        Share messages or doodles with a friend.
-      </li>
-      <li class="bullets__item">
-        Drawings slowly fade away over 24 hours.
-      </li>
-      <li class="bullets__item">
-        No notifications. Just check when you want.
-      </li>
+      <li class="bullets__item">Share messages or doodles with a friend.</li>
+      <li class="bullets__item">Drawings slowly fade away over 24 hours.</li>
+      <li class="bullets__item">No notifications. Just check when you want.</li>
     </ul>
     <p>
       Sound good? Start using it today

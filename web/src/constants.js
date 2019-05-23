@@ -1,5 +1,6 @@
 export const MAX_FRIENDS = 6;
 export const MIN_PASSWORD_LENGTH = 8;
+export const USERNAME_REGEX = /^[a-zA-Z0-9-_]+$/;
 
 export const APP_SIZE = 500; // px
 

@@ -39,9 +39,7 @@
               <template v-if="message.slot">
                 <slot name="message" />
               </template>
-              <template v-else>
-                {{ message.text }}
-              </template>
+              <template v-else>{{ message.text }}</template>
             </p>
           </div>
         </div>
@@ -64,10 +62,7 @@ export default {
       type: Function,
       default: () => {}
     },
-    submit: {
-      type: Function,
-      default: () => Promise.resolve()
-    },
+    submit: Function,
     prefill: {
       type: Object,
       default: () => ({})

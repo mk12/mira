@@ -4,14 +4,14 @@
     action="Change"
     v-bind="{ fields, validate, submit }"
   >
-    <template #instructions>
-      Please confirm your current password and choose a new password.
-    </template>
+    <template #instructions
+      >Please confirm your current password and choose a new password.</template
+    >
   </BasicForm>
 </template>
 
 <script>
-import auth from "@/auth";
+import api from "@/api";
 import { MIN_PASSWORD_LENGTH } from "@/constants";
 import { errorStatus, formError, genericFormError } from "@/util";
 
@@ -24,25 +24,23 @@ export default {
     BasicForm
   },
 
-  data() {
-    return {
-      fields: [
-        {
-          id: "oldPassword",
-          type: "password",
-          label: "Old password",
-          placeholder: "Enter old password",
-          required: "Please enter your old password."
-        },
-        {
-          id: "newPassword",
-          type: "password",
-          label: "New password",
-          placeholder: "Enter new password",
-          required: "Please choose a new password."
-        }
-      ]
-    };
+  created() {
+    this.fields = [
+      {
+        id: "oldPassword",
+        type: "password",
+        label: "Old password",
+        placeholder: "Enter old password",
+        required: "Please enter your old password."
+      },
+      {
+        id: "newPassword",
+        type: "password",
+        label: "New password",
+        placeholder: "Enter new password",
+        required: "Please choose a new password."
+      }
+    ];
   },
 
   methods: {
@@ -59,10 +57,11 @@ export default {
 
     async submit(form) {
       try {
-        await auth.changePassword(
-          form.oldPassword.value,
-          form.newPassword.value
-        );
+        await api.put("change_password", {
+          password: form.oldPassword.value,
+          new_password: form.newPassword.value
+        });
+        await this.$store.dispatch("auth/logout", { skipServer: true });
       } catch (error) {
         switch (errorStatus(error)) {
           case 401:
