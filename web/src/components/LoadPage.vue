@@ -1,9 +1,7 @@
 <template>
   <div class="absolute-fill">
     <transition name="cross-fade" appear>
-      <div v-if="status !== 'loaded'" :key="message" class="center-box">
-        <p :class="{ 'error-message': status === 'error' }">{{ message }}</p>
-      </div>
+      <StatusMessage v-if="!loaded" :message="message" class="center-box" />
       <div v-else :key="refreshKey" class="absolute-fill">
         <slot />
       </div>
@@ -14,11 +12,23 @@
 <script>
 import { mapState } from "vuex";
 
+import { genericErrorMessage, neutralMessage } from "@/util";
+
+import StatusMessage from "@/components/StatusMessage.vue";
+
 export default {
   name: "LoadPage",
 
+  components: {
+    StatusMessage
+  },
+
   props: {
-    resource: Object
+    resource: Object,
+    handleError: {
+      type: Function,
+      default: () => false
+    }
   },
 
   data() {
@@ -30,31 +40,35 @@ export default {
   computed: {
     ...mapState("data", ["refreshKey"]),
 
-    status() {
-      return this.$store.getters["data/status"](this.resource);
+    error() {
+      return this.$store.getters["data/getError"](this.resource);
+    },
+
+    loaded() {
+      if (this.error && this.handleError(this.error)) {
+        return true;
+      }
+      return !!this.$store.getters["data/getData"](this.resource);
     },
 
     message() {
-      return this.status === "error"
-        ? "An unexpected error occurred."
-        : "Loading ...";
+      return this.error
+        ? genericErrorMessage(this.error)
+        : neutralMessage("Loading ...");
     }
   },
 
   methods: {
     async reload() {
-      await this.$store.dispatch("data/reload", this.resource);
-      if (this.status === "loaded") {
+      await this.$store.dispatch("data/load", this.resource);
+      if (this.loaded) {
         this.$emit("load");
       }
     }
   },
 
   async created() {
-    await this.$store.dispatch("data/load", this.resource);
-    if (this.status === "loaded") {
-      this.$emit("load");
-    }
+    await this.reload();
   }
 };
 </script>

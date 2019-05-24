@@ -51,7 +51,7 @@ export default {
 
   computed: {
     user() {
-      return this.$store.getters["data/get"]({
+      return this.$store.getters["data/getData"]({
         loader: "oneFriend",
         username: this.username
       });

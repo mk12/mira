@@ -10,30 +10,30 @@ export function errorCode(error) {
   return error.response && error.response.data && error.response.data.code;
 }
 
-export function formSuccess(text) {
+export function neutralMessage(text) {
   return { text };
 }
 
-export function formSuccessSlot() {
-  return { slot: true };
+export function successMessage(text) {
+  return { text, success: true };
 }
 
-export function formError(text) {
+export function errorMessage(text) {
   return { text, error: true };
 }
 
-export function genericFormError(error) {
+export function genericErrorMessage(error) {
   if (errorCode(error) === "login_fail") {
-    return formError("Wrong username or password.");
+    return errorMessage("Wrong username or password.");
   }
   if (errorCode(error) === "username_taken") {
-    return formError("Username is already taken.");
+    return errorMessage("Username is already taken.");
   }
   if (errorStatus(error) === 429) {
-    return formError("Too many requests.");
+    return errorMessage("Too many requests.");
   }
   if (error.code === "ECONNABORTED") {
-    return formError("Request timed out.");
+    return errorMessage("Request timed out.");
   }
-  return formError("An unexpected error occurred.");
+  return errorMessage("An unexpected error occurred.");
 }

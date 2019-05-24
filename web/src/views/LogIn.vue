@@ -27,7 +27,7 @@
 <script>
 import { mapActions, mapGetters, mapState } from "vuex";
 
-import { genericFormError } from "@/util";
+import { genericErrorMessage } from "@/util";
 
 import ActionButton from "@/components/ActionButton.vue";
 import BasicForm from "@/components/BasicForm.vue";
@@ -86,7 +86,7 @@ export default {
           password: form.password.value
         });
       } catch (error) {
-        return genericFormError(error);
+        return genericErrorMessage(error);
       }
       this.$router.push(this.$route.query.redirect || "/");
     }

@@ -1,4 +1,5 @@
 import Vue from "vue";
+import isEqual from "lodash.isequal";
 
 import api from "@/api";
 
@@ -16,6 +17,8 @@ function resourceKey(resource) {
       return "friends_data";
     case "oneFriend":
       return "friends/" + encodeURIComponent(resource.username);
+    case "canvas":
+      return `friends/${encodeURIComponent(resource.username)}/canvas`;
   }
 }
 
@@ -25,19 +28,7 @@ export default {
   state: initialState,
 
   getters: {
-    status(state, getters) {
-      return function(resource) {
-        if (state.errors[resourceKey(resource)]) {
-          return "error";
-        }
-        if (getters.get(resource) !== undefined) {
-          return "loaded";
-        }
-        return "loading";
-      };
-    },
-
-    get(state, getters) {
+    getData(state, getters) {
       return function(resource) {
         let value = state.data[resourceKey(resource)];
         if (value !== undefined) {
@@ -45,23 +36,27 @@ export default {
         }
         if (
           resource.loader === "oneFriend" &&
-          getters.friendMap &&
           getters.friendMap[resource.username]
         ) {
           return getters.friendMap[resource.username];
         }
-        return null;
+        return undefined;
+      };
+    },
+
+    getError(state) {
+      return function(resource) {
+        return state.errors[resourceKey(resource)];
       };
     },
 
     friendMap(state) {
-      let friends = state.data.friends_data;
-      if (!friends) {
-        return null;
-      }
       let map = {};
-      for (let friend of friends) {
-        map[friend.username] = friend;
+      let friends = state.data.friends_data;
+      if (friends) {
+        for (let friend of friends) {
+          map[friend.username] = friend;
+        }
       }
       return map;
     }
@@ -72,8 +67,8 @@ export default {
       Object.assign(state, initialState());
     },
 
-    loadError(state, { key }) {
-      Vue.set(state.errors, key, true);
+    loadError(state, { key, error }) {
+      Vue.set(state.errors, key, error);
     },
 
     loadSuccess(state, { key, value }) {
@@ -86,26 +81,23 @@ export default {
   },
 
   actions: {
-    async load({ commit, rootGetters }, resource) {
+    async load({ commit, getters, rootGetters }, resource) {
       if (!rootGetters["auth/isLoggedIn"]) {
         return;
       }
+      let oldData = getters.getData(resource);
       let key = resourceKey(resource);
       let response;
       try {
         response = await api.get(key);
       } catch (error) {
-        commit("loadError", { key });
+        commit("loadError", { key, error });
         return;
       }
       commit("loadSuccess", { key, value: response.data });
-      if (resource.refresh) {
+      if (!isEqual(oldData, getters.getData(resource))) {
         commit("refresh");
       }
-    },
-
-    async reload({ dispatch }, resource) {
-      await dispatch("load", { ...resource, refresh: true });
     }
   }
 };

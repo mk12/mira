@@ -1,6 +1,11 @@
 <template>
   <div class="text-page">
-    <LoadPage ref="load" :resource="resource" @load="onLoad">
+    <LoadPage
+      ref="load"
+      :resource="resource"
+      :handleError="handleError"
+      @load="onLoad"
+    >
       <template v-if="user">
         <template v-if="user.state === 'friend'">
           <h1>Friend: {{ username }}</h1>
@@ -54,9 +59,7 @@
           <ActionButton :submit="friend" class="block" value="Add friend" />
         </template>
       </template>
-      <transition name="abrupt-fade" appear>
-        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
-      </transition>
+      <StatusMessage :message="message" />
     </LoadPage>
   </div>
 </template>
@@ -65,11 +68,12 @@
 import { distanceInWordsToNow, parse } from "date-fns";
 
 import api from "@/api";
-import { genericFormError } from "@/util";
+import { errorStatus, genericErrorMessage } from "@/util";
 
 import ActionButton from "@/components/ActionButton.vue";
 import CanvasThumbnail from "@/components/CanvasThumbnail.vue";
 import LoadPage from "@/components/LoadPage.vue";
+import StatusMessage from "@/components/StatusMessage.vue";
 
 export default {
   name: "Friend",
@@ -77,7 +81,8 @@ export default {
   components: {
     ActionButton,
     CanvasThumbnail,
-    LoadPage
+    LoadPage,
+    StatusMessage
   },
 
   props: {
@@ -86,7 +91,7 @@ export default {
 
   data() {
     return {
-      errorMessage: null
+      message: null
     };
   },
 
@@ -96,7 +101,7 @@ export default {
 
   computed: {
     user() {
-      return this.$store.getters["data/get"](this.resource);
+      return this.$store.getters["data/getData"](this.resource);
     },
 
     relativeTime() {
@@ -105,6 +110,10 @@ export default {
   },
 
   methods: {
+    handleError(error) {
+      return errorStatus(error) === 404;
+    },
+
     onLoad() {
       if (!this.user) {
         this.$router.replace({ name: "404", params: { "0": this.username } });
@@ -112,7 +121,7 @@ export default {
     },
 
     async submit(method) {
-      this.errorMessage = null;
+      this.message = null;
       try {
         await api.request({
           method,
@@ -120,7 +129,7 @@ export default {
         });
         await this.$refs.load.reload();
       } catch (error) {
-        this.errorMessage = genericFormError(error).text;
+        this.message = genericErrorMessage(error);
       }
     },
 

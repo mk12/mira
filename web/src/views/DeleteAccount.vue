@@ -12,7 +12,7 @@
 
 <script>
 import api from "@/api";
-import { errorStatus, formError, genericFormError } from "@/util";
+import { errorMessage, errorStatus, genericErrorMessage } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
 
@@ -45,9 +45,9 @@ export default {
       } catch (error) {
         switch (errorStatus(error)) {
           case 401:
-            return formError("Invalid password.");
+            return errorMessage("Invalid password.");
           default:
-            return genericFormError(error);
+            return genericErrorMessage(error);
         }
       }
       this.$router.push(this.$route.query.redirect || "/");

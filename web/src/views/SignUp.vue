@@ -16,7 +16,7 @@
 <script>
 import api from "@/api";
 import { MIN_PASSWORD_LENGTH, USERNAME_REGEX } from "@/constants";
-import { errorCode, genericFormError } from "@/util";
+import { errorCode, genericErrorMessage } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
 
@@ -95,7 +95,7 @@ export default {
         if (errorCode(error) === "username_taken") {
           form.username.error = true;
         }
-        return genericFormError(error);
+        return genericErrorMessage(error);
       }
       this.$router.push(this.$route.query.redirect || "/");
     }

@@ -1,5 +1,5 @@
 <template>
-  <LoadPage>
+  <LoadPage :resource="{ loader: 'canvas', username }">
     <canvas
       ref="canvas"
       :width="appSize"

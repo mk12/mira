@@ -32,27 +32,24 @@
           <slot name="extra" :form="form" />
         </div>
       </div>
-      <transition name="abrupt-fade" appear>
-        <div v-if="message" :key="messageKey" class="form-group">
-          <div class="form-group__item">
-            <p :class="messageClass">
-              <template v-if="message.slot">
-                <slot name="message" />
-              </template>
-              <template v-else>{{ message.text }}</template>
-            </p>
-          </div>
-        </div>
-      </transition>
+      <StatusMessage :message="message">
+        <slot name="message" />
+      </StatusMessage>
     </form>
   </div>
 </template>
 
 <script>
-import { formError } from "@/util";
+import { errorMessage } from "@/util";
+
+import StatusMessage from "@/components/StatusMessage.vue";
 
 export default {
   name: "BasicForm",
+
+  components: {
+    StatusMessage
+  },
 
   props: {
     title: String,
@@ -86,15 +83,6 @@ export default {
     };
   },
 
-  computed: {
-    messageClass() {
-      return {
-        "success-message": !this.message.error,
-        "error-message": this.message.error
-      };
-    }
-  },
-
   methods: {
     validateForm() {
       let error = null;
@@ -106,8 +94,7 @@ export default {
         }
       }
       error = error || this.validate(this.form);
-      this.message = error ? formError(error) : null;
-      this.messageKey++;
+      this.message = error ? errorMessage(error) : null;
       return !error;
     },
 
@@ -118,7 +105,6 @@ export default {
           let result = await this.submit(this.form);
           if (result) {
             this.message = result;
-            this.messageKey++;
           }
         } finally {
           this.submitting = false;

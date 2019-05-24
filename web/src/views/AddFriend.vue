@@ -17,9 +17,9 @@
 import api from "@/api";
 import {
   errorCode,
-  formError,
-  formSuccessSlot,
-  genericFormError
+  errorMessage,
+  genericErrorMessage,
+  successMessage
 } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
@@ -59,13 +59,15 @@ export default {
       } catch (error) {
         switch (errorCode(error)) {
           case "unknown_user":
-            return formError("There is no one with that username.");
+            return errorMessage("There is no one with that username.");
           case "self":
-            return formError("You cannot add yourself as a friend.");
+            return errorMessage("You cannot add yourself as a friend.");
           case "maximum":
-            return formError("You already have the maximum number of friends.");
+            return errorMessage(
+              "You already have the maximum number of friends."
+            );
           default:
-            return genericFormError(error);
+            return genericErrorMessage(error);
         }
       }
 
@@ -73,18 +75,18 @@ export default {
       switch (response.data.code) {
         case "accept":
           this.message = "Became friends with";
-          return formSuccessSlot();
+          return successMessage();
         case "request":
           this.message = "Sent friend request to";
-          return formSuccessSlot();
+          return successMessage();
         case "no_op_accept":
           this.message = "Already friends with";
-          return formSuccessSlot();
+          return successMessage();
         case "no_op_request":
           this.message = "Already sent friend request to";
-          return formSuccessSlot();
+          return successMessage();
         default:
-          return formError("Unexpected server response.");
+          return errorMessage("Unexpected server response.");
       }
     }
   }

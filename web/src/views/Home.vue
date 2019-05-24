@@ -45,7 +45,7 @@ export default {
 
   computed: {
     friends() {
-      let friends = this.$store.getters["data/get"](this.resource);
+      let friends = this.$store.getters["data/getData"](this.resource);
       return friends ? friends.slice(0, MAX_FRIENDS) : null;
     }
   },
