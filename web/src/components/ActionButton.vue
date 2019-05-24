@@ -1,5 +1,10 @@
 <template>
-  <button class="button" :disabled="submitting" @click.prevent="click">
+  <button
+    type="button"
+    class="button"
+    :disabled="submitting"
+    @click.prevent="click"
+  >
     <div v-if="submitting" class="button__loader"></div>
     <span
       class="button__text"

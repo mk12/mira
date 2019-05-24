@@ -16,12 +16,12 @@
           <ActionButton
             :submit="acceptRequest"
             value="Accept"
-            class="button--inline thumbnail__button"
+            class="button--small thumbnail__button"
           />
           <ActionButton
             :submit="ignoreRequest"
             value="Ignore"
-            class="button--inline thumbnail__button"
+            class="button--small thumbnail__button"
           />
         </template>
         <template v-else-if="user.state === 'outgoing'"
@@ -45,24 +45,28 @@ export default {
   },
 
   props: {
-    username: String
+    username: String,
+    reload: Function
   },
 
   computed: {
     user() {
-      return this.$store.getters["data/getFriend"](this.username);
+      return this.$store.getters["data/get"]({
+        loader: "oneFriend",
+        username: this.username
+      });
     }
   },
 
   methods: {
     async acceptRequest() {
       await api.put("friends/" + encodeURIComponent(this.username));
-      this.$emit("respond");
+      await this.reload();
     },
 
     async ignoreRequest() {
       await api.delete("friends/" + encodeURIComponent(this.username));
-      this.$emit("respond");
+      await this.reload();
     }
   }
 };

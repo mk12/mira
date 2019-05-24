@@ -5,7 +5,8 @@ import api from "@/api";
 function initialState() {
   return {
     data: {},
-    errors: {}
+    errors: {},
+    refreshKey: 0
   };
 }
 
@@ -24,47 +25,45 @@ export default {
   state: initialState,
 
   getters: {
-    status(state) {
+    status(state, getters) {
       return function(resource) {
-        let key = resourceKey(resource);
-        if (state.errors[key]) {
+        if (state.errors[resourceKey(resource)]) {
           return "error";
         }
-        if (state.data[key] === undefined) {
-          return "loading";
+        if (getters.get(resource) !== undefined) {
+          return "loaded";
         }
-        return "loaded";
+        return "loading";
       };
     },
 
-    friendList(state) {
-      return state.data.friends_data;
+    get(state, getters) {
+      return function(resource) {
+        let value = state.data[resourceKey(resource)];
+        if (value !== undefined) {
+          return value;
+        }
+        if (
+          resource.loader === "oneFriend" &&
+          getters.friendMap &&
+          getters.friendMap[resource.username]
+        ) {
+          return getters.friendMap[resource.username];
+        }
+        return null;
+      };
     },
 
-    friendMap(state, getters) {
-      if (!getters.friendList) {
+    friendMap(state) {
+      let friends = state.data.friends_data;
+      if (!friends) {
         return null;
       }
       let map = {};
-      for (let friend of getters.friendList) {
+      for (let friend of friends) {
         map[friend.username] = friend;
       }
       return map;
-    },
-
-    getFriend(state, getters) {
-      return function(username) {
-        let key = resourceKey({ loader: "oneFriend", username });
-        let friend = state.data[key];
-        if (friend) {
-          return friend;
-        }
-        let map = getters.friendMap;
-        if (map) {
-          return map[username];
-        }
-        return null;
-      };
     }
   },
 
@@ -73,12 +72,16 @@ export default {
       Object.assign(state, initialState());
     },
 
-    loadError(state, payload) {
-      Vue.set(state.errors, payload.key, true);
+    loadError(state, { key }) {
+      Vue.set(state.errors, key, true);
     },
 
-    loadSuccess(state, payload) {
-      Vue.set(state.data, payload.key, payload.value);
+    loadSuccess(state, { key, value }) {
+      Vue.set(state.data, key, value);
+    },
+
+    refresh(state) {
+      state.refreshKey++;
     }
   },
 
@@ -96,13 +99,13 @@ export default {
         return;
       }
       commit("loadSuccess", { key, value: response.data });
-      if (resource.rerender) {
-        commit("page/rerender", null, { root: true });
+      if (resource.refresh) {
+        commit("refresh");
       }
     },
 
     async reload({ dispatch }, resource) {
-      dispatch("load", { ...resource, rerender: true });
+      await dispatch("load", { ...resource, refresh: true });
     }
   }
 };

@@ -35,5 +35,5 @@ export function genericFormError(error) {
   if (error.code === "ECONNABORTED") {
     return formError("Request timed out.");
   }
-  return formError("An unknown error occurred.");
+  return formError("An unexpected error occurred.");
 }

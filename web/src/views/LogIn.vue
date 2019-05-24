@@ -1,10 +1,11 @@
 <template>
   <div v-if="isLoggedIn" class="text-page">
-    <p>You are already logged in as <strong>{{ username }}</strong>!</p>
-    <ActionButton
-      :submit="logout"
-      value="Log out"
-      />
+    <!-- FIXME SHOWS UP WHEN FADING OUT AFTER LOGIN :( -->
+    <p>
+      You are already logged in as <strong>{{ username }}</strong
+      >!
+    </p>
+    <ActionButton :submit="logout" value="Log out" />
   </div>
   <BasicForm
     v-else

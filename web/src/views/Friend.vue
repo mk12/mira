@@ -1,7 +1,6 @@
 <template>
   <div class="text-page">
-    <LoadPage :resource="initialResource" @load="onLoad">
-    <div :key="key">
+    <LoadPage ref="load" :resource="resource" @load="onLoad">
       <template v-if="user">
         <template v-if="user.state === 'friend'">
           <h1>Friend: {{ username }}</h1>
@@ -9,8 +8,8 @@
             You became friends with <strong>{{ username }}</strong>
             {{ relativeTime }}.
           </p>
-          <CanvasThumbnail :username="username" class="friend-thumbnail" />
-          <ActionButton :submit="unfriend" value="Unfriend" />
+          <CanvasThumbnail :username="username" class="block block--center" />
+          <ActionButton :submit="unfriend" class="block" value="Unfriend" />
         </template>
         <template v-else-if="user.state === 'outgoing'">
           <h1>Pending friend: {{ username }}</h1>
@@ -18,7 +17,11 @@
             You sent a friend request to <strong>{{ username }}</strong>
             {{ relativeTime }}.
           </p>
-          <ActionButton :submit="unfriend" value="Revoke request" />
+          <ActionButton
+            :submit="unfriend"
+            class="block"
+            value="Revoke request"
+          />
         </template>
         <template v-else-if="user.state === 'incoming'">
           <h1>Friend request: {{ username }}</h1>
@@ -38,7 +41,8 @@
         <template v-else-if="user.state === 'self'">
           <h1>User: {{ username }}</h1>
           <p>
-            You are <strong>{{ username }}</strong>!
+            You are <strong>{{ username }}</strong
+            >!
           </p>
         </template>
         <template v-else-if="user.state === 'stranger'">
@@ -47,10 +51,12 @@
             You are not friends with <strong>{{ username }}</strong
             >.
           </p>
-          <ActionButton :submit="friend" value="Add friend" />
+          <ActionButton :submit="friend" class="block" value="Add friend" />
         </template>
       </template>
-    </div>
+      <transition name="abrupt-fade" appear>
+        <p v-if="errorMessage" class="error-message">{{ errorMessage }}</p>
+      </transition>
     </LoadPage>
   </div>
 </template>
@@ -59,6 +65,7 @@
 import { distanceInWordsToNow, parse } from "date-fns";
 
 import api from "@/api";
+import { genericFormError } from "@/util";
 
 import ActionButton from "@/components/ActionButton.vue";
 import CanvasThumbnail from "@/components/CanvasThumbnail.vue";
@@ -77,23 +84,19 @@ export default {
     username: String
   },
 
+  data() {
+    return {
+      errorMessage: null
+    };
+  },
+
   created() {
     this.resource = { loader: "oneFriend", username: this.username };
   },
 
-  data() {
-    return {
-      key: 0
-    };
-  },
-
   computed: {
     user() {
-      return this.$store.getters["data/getFriend"](this.username);
-    },
-
-    initialResource() {
-      return this.user ? null : this.resource;
+      return this.$store.getters["data/get"](this.resource);
     },
 
     relativeTime() {
@@ -108,24 +111,26 @@ export default {
       }
     },
 
-    async unfriend() {
-      await api.delete("friends/" + encodeURIComponent(this.username));
-      await this.$store.dispatch("data/load", this.resource);
-      this.key++;
-      // TODO handle 500 error?
+    async submit(method) {
+      this.errorMessage = null;
+      try {
+        await api.request({
+          method,
+          url: "friends/" + encodeURIComponent(this.username)
+        });
+        await this.$refs.load.reload();
+      } catch (error) {
+        this.errorMessage = genericFormError(error).text;
+      }
     },
 
     async friend() {
-      await api.put("friends/" + encodeURIComponent(this.username));
-      await this.$store.dispatch("data/reload", this.resource);
-      // TODO handle 500 error?
+      await this.submit("put");
+    },
+
+    async unfriend() {
+      await this.submit("delete");
     }
   }
 };
 </script>
-
-<style lang="scss" scoped>
-/deep/ .friend-thumbnail {
-  margin: 1em auto;
-}
-</style>

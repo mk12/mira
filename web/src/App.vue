@@ -2,7 +2,7 @@
   <div class="wrapper">
     <div class="container">
       <transition name="cross-fade">
-        <router-view class="container__content" />
+        <router-view class="absolute-fill" />
       </transition>
       <nav class="container__navigation">
         <ul class="nav-list">
@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import { mapGetters, mapState } from "vuex";
+import { mapGetters } from "vuex";
 
 export default {
   name: "App",
@@ -67,19 +67,12 @@ export default {
   margin: 50px;
   padding: 0;
   background: $background;
+  border-style: solid;
   border-image: asset("border.png") #{214} / #{103px} / #{14px} round;
   width: $app-size;
   height: $app-size;
   min-height: $app-size;
   position: relative;
-
-  &__content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-  }
 
   &__navigation {
     position: absolute;
@@ -106,6 +99,7 @@ export default {
 
   &:hover {
     border: 0;
+    color: $action;
   }
 }
 

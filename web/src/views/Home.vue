@@ -1,6 +1,6 @@
 <template>
   <div class="text-page">
-    <LoadPage :resource="{ loader: 'allFriends' }">
+    <LoadPage ref="load" :resource="resource">
       <template v-if="friends">
         <div v-if="!friends.length" class="center-box">
           <p class="friend-message">Friends will show up here!</p>
@@ -12,7 +12,7 @@
             :key="friend.username"
             class="friend-grid__item"
           >
-            <CanvasThumbnail :username="friend.username" @respond="reload" />
+            <CanvasThumbnail :username="friend.username" :reload="reload" />
             <router-link
               :to="{ name: 'friend', params: { username: friend.username } }"
               class="small"
@@ -39,19 +39,20 @@ export default {
     LoadPage
   },
 
+  created() {
+    this.resource = { loader: "allFriends" };
+  },
+
   computed: {
     friends() {
-      let list = this.$store.getters["data/friendList"];
-      return list ? list.slice(0, MAX_FRIENDS) : null;
+      let friends = this.$store.getters["data/get"](this.resource);
+      return friends ? friends.slice(0, MAX_FRIENDS) : null;
     }
   },
 
   methods: {
     async reload() {
-      await this.$store.dispatch("data/load", {
-        key: "friends",
-        rerender: true
-      });
+      await this.$refs.load.reload();
     }
   }
 };

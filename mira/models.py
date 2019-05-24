@@ -145,9 +145,9 @@ class User(BaseModel, UserMixin):
         if outgoing and incoming:
             return user.serialize(FRIEND_STATE, outgoing)
         if outgoing and not incoming:
-            return user.serialize(incoming_STATE, outgoing)
+            return user.serialize(OUTGOING_STATE, outgoing)
         if not outgoing and incoming:
-            return user.serialize(outgoing_STATE, incoming)
+            return user.serialize(INCOMING_STATE, incoming)
         return user.serialize(STRANGER_STATE)
 
     def all_friends_data(self):
