@@ -1,43 +1,34 @@
 <template>
-  <div v-if="isLoggedIn" class="text-page">
-    <!-- FIXME SHOWS UP WHEN FADING OUT AFTER LOGIN :( -->
-    <p>
-      You are already logged in as <strong>{{ username }}</strong
-      >!
-    </p>
-    <ActionButton :submit="logout" value="Log out" />
-  </div>
-  <BasicForm
-    v-else
-    title="Log in"
-    action="Log in"
-    v-bind="{ fields, submit, prefill }"
-  >
-    <template #instructions
-      >Please enter your username and password.</template
+  <LogoutRequired>
+    <BasicForm
+      title="Log in"
+      action="Log in"
+      v-bind="{ fields, submit, prefill }"
     >
-    <template #extra="{ form }">
-      <router-link :to="signupRoute(form)"
-        >Want to create an account?</router-link
+      <template #instructions
+        >Please enter your username and password.</template
       >
-    </template>
-  </BasicForm>
+      <template #extra="{ form }">
+        <router-link :to="signupRoute(form)"
+          >Want to create an account?</router-link
+        >
+      </template>
+    </BasicForm>
+  </LogoutRequired>
 </template>
 
 <script>
-import { mapActions, mapGetters, mapState } from "vuex";
-
 import { genericErrorMessage } from "@/util";
 
-import ActionButton from "@/components/ActionButton.vue";
 import BasicForm from "@/components/BasicForm.vue";
+import LogoutRequired from "@/components/LogoutRequired.vue";
 
 export default {
   name: "LogIn",
 
   components: {
-    ActionButton,
-    BasicForm
+    BasicForm,
+    LogoutRequired
   },
 
   props: {
@@ -63,14 +54,7 @@ export default {
     ];
   },
 
-  computed: {
-    ...mapGetters("auth", ["isLoggedIn"]),
-    ...mapState("auth", ["username"])
-  },
-
   methods: {
-    ...mapActions("auth", ["logout"]),
-
     signupRoute(form) {
       return {
         name: "signup",
@@ -88,6 +72,7 @@ export default {
       } catch (error) {
         return genericErrorMessage(error);
       }
+      await this.$nextTick();
       this.$router.push(this.$route.query.redirect || "/");
     }
   }

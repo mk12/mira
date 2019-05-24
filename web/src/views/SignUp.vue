@@ -1,16 +1,20 @@
 <template>
-  <BasicForm
-    title="Sign up"
-    action="Register"
-    v-bind="{ fields, validate, submit, prefill }"
-  >
-    <template #instructions
-      >Please choose a username and password.</template
+  <LogoutRequired>
+    <BasicForm
+      title="Sign up"
+      action="Register"
+      v-bind="{ fields, validate, submit, prefill }"
     >
-    <template #extra="{ form }">
-      <router-link :to="loginRoute(form)">Already have an account?</router-link>
-    </template>
-  </BasicForm>
+      <template #instructions
+        >Please choose a username and password.</template
+      >
+      <template #extra="{ form }">
+        <router-link :to="loginRoute(form)"
+          >Already have an account?</router-link
+        >
+      </template>
+    </BasicForm>
+  </LogoutRequired>
 </template>
 
 <script>
@@ -19,12 +23,14 @@ import { MIN_PASSWORD_LENGTH, USERNAME_REGEX } from "@/constants";
 import { errorCode, genericErrorMessage } from "@/util";
 
 import BasicForm from "@/components/BasicForm.vue";
+import LogoutRequired from "@/components/LogoutRequired.vue";
 
 export default {
   name: "SignUp",
 
   components: {
-    BasicForm
+    BasicForm,
+    LogoutRequired
   },
 
   props: {
