@@ -12,7 +12,11 @@
             :key="friend.username"
             class="friend-grid__item"
           >
-            <CanvasThumbnail :username="friend.username" :reload="reload" />
+            <CanvasThumbnail
+              :user="friend"
+              :reload="reload"
+              class="friend-grid__thumbnail"
+            />
             <router-link
               :to="{ name: 'friend', params: { username: friend.username } }"
               class="small"
@@ -70,6 +74,10 @@ export default {
   &__item {
     margin: 15px;
     flex-basis: fit-content;
+  }
+
+  &__thumbnail {
+    margin-bottom: 5px;
   }
 }
 

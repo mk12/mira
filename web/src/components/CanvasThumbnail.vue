@@ -1,10 +1,13 @@
 <template>
-  <div>
+  <div class="thumbnail-wrapper">
     <template v-if="user.state === 'friend'">
-      <router-link :to="{ name: 'canvas', params: { username } }" class="link">
+      <router-link
+        :to="{ name: 'canvas', params: { username: user.username } }"
+        class="link"
+      >
         <img
-          v-if="user.canvas"
-          :src="'data:image/jpg;base64,' + user.canvas"
+          v-if="user.thumbnail"
+          :src="thumbnailSrc"
           class="thumbnail thumbnail--enabled"
         />
         <div v-else class="thumbnail thumbnail--enabled center-box">Draw!</div>
@@ -34,6 +37,7 @@
 
 <script>
 import api from "@/api";
+import { makeDataURL } from "@/util";
 
 import ActionButton from "@/components/ActionButton.vue";
 
@@ -45,27 +49,24 @@ export default {
   },
 
   props: {
-    username: String,
+    user: Object,
     reload: Function
   },
 
   computed: {
-    user() {
-      return this.$store.getters["data/getData"]({
-        loader: "oneFriend",
-        username: this.username
-      });
+    thumbnailSrc() {
+      return makeDataURL(this.user.thumbnail);
     }
   },
 
   methods: {
     async acceptRequest() {
-      await api.put("friends/" + encodeURIComponent(this.username));
+      await api.put("friends/" + encodeURIComponent(this.user.username));
       await this.reload();
     },
 
     async ignoreRequest() {
-      await api.delete("friends/" + encodeURIComponent(this.username));
+      await api.delete("friends/" + encodeURIComponent(this.user.username));
       await this.reload();
     }
   }
@@ -73,10 +74,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.link {
+.thumbnail-wrapper {
   line-height: 0;
-  border: none;
-  display: inline-block;
 }
 
 .thumbnail {
@@ -96,5 +95,11 @@ export default {
   &__button {
     margin: 5px 0;
   }
+}
+
+.link {
+  line-height: 0;
+  border: none;
+  display: inline-block;
 }
 </style>

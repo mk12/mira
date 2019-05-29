@@ -1,10 +1,12 @@
 """This module defines views, including both web routes and API endpoints."""
 
-from base64 import b64encode
+from base64 import b64decode, b64encode
+import binascii
 
 from flask import jsonify, request, render_template
 from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload, undefer
 from werkzeug.exceptions import HTTPException, InternalServerError
 
 from mira import app
@@ -228,19 +230,53 @@ def get_canvas(username):
     user = User.by_name(username)
     if not user:
         return error(404, "unknown_user", "No user has that username")
-    friendship = Friendship.between(current_user, user)
-    if not friendship:
+    friendship = (
+        Friendship.between(current_user, user, query=True)
+        .options(joinedload(Friendship.canvas).undefer(Canvas.data))
+        .first()
+    )
+    reverse_friendship = Friendship.between(user, current_user)
+    if not (friendship and reverse_friendship):
         return error(404, "not_friends", "Not friends with that user")
-    # if no canvas, check for reciprocating friendship & create if exists
+    assert not friendship.ignored
+    assert not reverse_friendship.ignored
+    if not friendship.canvas:
+        canvas = Canvas()
+        friendship.canvas = canvas
+        reverse_friendship.canvas = canvas
+        db.session.add(friendship)
+        db.session.add(reverse_friendship)
+        db.session.commit()
     data = friendship.canvas.data
     if not data:
-        return error(404, "no_canvas", "No canvas found")
-    return ok("canvas", "Retrieved canvas data", data=b64encode(data))
+        return jsonify(None)
+    return jsonify(b64encode(data).decode())
 
 
 @app.route("/api/friends/<username>/sync", methods=["POST"])
 @login_required
 @logged_in_limit
-def sync():
-    # sync canvas
-    pass
+def sync(username):
+    base64_data = get_fields("data")
+    try:
+        data = b64decode(base64_data)
+    except binascii.Error:
+        return error(400, "bad_base64", "Could not decode base64 data")
+    user = User.by_name(username)
+    if not user:
+        return error(404, "unknown_user", "No user has that username")
+    canvas = (
+        Canvas.query.options(undefer(Canvas.data), undefer(Canvas.thumbnail))
+        .join(Canvas.friendships)
+        .filter(
+            Friendship.friender == current_user, Friendship.friendee == user
+        )
+        .with_for_update(of=Canvas)
+        .first()
+    )
+    if not canvas:
+        return error(404, "not_friends", "Not friends with that user")
+    data = canvas.mix(data)
+    db.session.add(canvas)
+    db.session.commit()
+    return jsonify(b64encode(data).decode())

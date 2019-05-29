@@ -1,26 +1,24 @@
 # Mira
 
-TODO: mention BEM, json response format.
-
 Mira is an fun and simple communication app.
 
-Think of Mira as a virtual notepad on your friend or loved one's desk. Leave a note or drawing to brighten their day. Check back later to see if they left a reply.
+Think of Mira as a virtual notepad on someone else's desk. Leave a note or drawing to brighten their day. Check back later to see if they left a reply.
 
 _Mira is …_
 
-- **Personal**: It's just you and another person. How you use it is up to you.
-- **Ephemeral**: Whatever you draw will slowly fade away over the next 24 hours.
-- **Unobtrusive**: There are no notifications. Never worry about interrupting someone.
+- **Personal**: Share messages or doodles with a friend.
+- **Ephemeral**: Drawings slowly fade away over 24 hours.
+- **Unobtrusive**: No notifications. Just check when you want.
 
 ## Features
 
 Current features:
 
 - **Accounts**: Log in with a username and password.
-- **Canvas**: Type or draw on the shared canvas (the "Mira").
+- **Friends**: You get a separate Mira for each friend you connect with.
+- **Canvas**: Draw on the shared canvas (the "Mira").
 - **Sync**: It syncs with the server periodically (not real-time).
 - **Fading**: Drawings fade slowly over the course of hours.
-- **Friends**: You get a separate Mira for each friend you connect with.
 
 Planned features:
 

@@ -98,6 +98,11 @@ export default {
       if (!isEqual(oldData, getters.getData(resource))) {
         commit("refresh");
       }
+    },
+
+    async set({ commit }, { resource, value }) {
+      let key = resourceKey(resource);
+      commit("loadSuccess", { key, value });
     }
   }
 };

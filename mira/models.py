@@ -1,9 +1,13 @@
 """This module defines the data models for Mira."""
 
-from datetime import datetime
+from base64 import b64encode
+from datetime import datetime, timedelta
+from io import BytesIO
 from uuid import uuid4
+import math
 import re
 
+from PIL import Image
 from flask_login.mixins import UserMixin
 from sqlalchemy import CheckConstraint, Column, ForeignKey
 from sqlalchemy.ext.associationproxy import association_proxy
@@ -31,6 +35,11 @@ FRIEND_STATE = "friend"
 INCOMING_STATE = "incoming"
 OUTGOING_STATE = "outgoing"
 STRANGER_STATE = "stranger"
+
+IMAGE_FORMAT = "PNG"
+THUMBNAIL_SIZE = 100, 100
+FADE_MULTIPLIER = 0.95
+FADE_PERIOD = timedelta(hours=1)
 
 
 class BaseModel(db.Model):
@@ -125,7 +134,11 @@ class User(BaseModel, UserMixin):
         if friendship:
             data["time"] = friendship.updated_at.isoformat() + "Z"
         if state == FRIEND_STATE:
-            data["thumbnail"] = friendship.canvas.thumbnail
+            canvas = friendship.canvas
+            thumbnail = canvas and canvas.thumbnail
+            data["thumbnail"] = (
+                b64encode(thumbnail).decode() if thumbnail else None
+            )
         return data
 
     def friend_data(self, user):
@@ -257,8 +270,35 @@ class Canvas(BaseModel):
     __tablename__ = "canvases"
 
     id = Column(Integer, primary_key=True)
-    thumbnail = deferred(Column(LargeBinary, nullable=True))
-    data = deferred(Column(LargeBinary, nullable=True))
+    thumbnail = deferred(Column(LargeBinary))
+    data = deferred(Column(LargeBinary))
+    last_fade = Column(DateTime)
+
+    def mix(self, new_data):
+        now = datetime.utcnow()
+        if not self.data:
+            self.data = new_data
+            self.last_fade = now
+            image = Image.open(BytesIO(new_data))
+        else:
+            image = Image.open(BytesIO(self.data))
+            blank = Image.new("RGBA", image.size, (0, 0, 0, 0))
+            elapsed = now - self.last_fade
+            if elapsed >= FADE_PERIOD:
+                num_periods = math.floor(elapsed / FADE_PERIOD)
+                alpha_multiplier = FADE_MULTIPLIER ** num_periods
+                image = Image.blend(blank, image, alpha_multiplier)
+                self.last_fade += num_periods * FADE_PERIOD
+            new_image = Image.open(BytesIO(new_data))
+            data_bytes = BytesIO()
+            image.paste(new_image, (0, 0), mask=new_image)
+            image.save(data_bytes, IMAGE_FORMAT)
+            self.data = data_bytes.getvalue()
+        thumbnail_bytes = BytesIO()
+        image.thumbnail(THUMBNAIL_SIZE, Image.BICUBIC)
+        image.save(thumbnail_bytes, IMAGE_FORMAT)
+        self.thumbnail = thumbnail_bytes.getvalue()
+        return self.data
 
     def __repr__(self):
         return f"<Canvas {self.id}>"

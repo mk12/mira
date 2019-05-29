@@ -13,6 +13,8 @@
             class="text-input"
             :class="{ 'text-input--error': form[field.id].error }"
             :placeholder="field.placeholder"
+            autocorrect="off"
+            autocapitalize="none"
           />
         </div>
       </div>

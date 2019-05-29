@@ -13,7 +13,7 @@
             You became friends with <strong>{{ username }}</strong>
             {{ relativeTime }}.
           </p>
-          <CanvasThumbnail :username="username" class="block block--center" />
+          <CanvasThumbnail :user="user" class="block block--center" />
           <ActionButton :submit="unfriend" class="block" value="Unfriend" />
         </template>
         <template v-else-if="user.state === 'outgoing'">

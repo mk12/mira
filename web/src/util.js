@@ -37,3 +37,11 @@ export function genericErrorMessage(error) {
   }
   return errorMessage("An unexpected error occurred.");
 }
+
+export function makeDataURL(data) {
+  return "data:image/png;base64," + data;
+}
+
+export function extractDataURL(dataURL) {
+    return dataURL.substr(dataURL.indexOf(",") + 1);
+}

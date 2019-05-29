@@ -1,8 +1,13 @@
 <template>
   <div class="absolute-fill">
     <transition name="cross-fade" appear>
-      <StatusMessage v-if="!loaded" :message="message" class="center-box" />
-      <div v-else :key="refreshKey" class="absolute-fill">
+      <StatusMessage
+        v-if="!loaded"
+        key="message"
+        :message="message"
+        class="center-box"
+      />
+      <div v-else :key="refresh ? refreshKey : 'content'" class="absolute-fill">
         <slot />
       </div>
     </transition>
@@ -25,6 +30,10 @@ export default {
 
   props: {
     resource: Object,
+    refresh: {
+      type: Boolean,
+      default: true
+    },
     handleError: {
       type: Function,
       default: () => false
@@ -48,7 +57,7 @@ export default {
       if (this.error && this.handleError(this.error)) {
         return true;
       }
-      return !!this.$store.getters["data/getData"](this.resource);
+      return this.$store.getters["data/getData"](this.resource) !== undefined;
     },
 
     message() {
@@ -68,6 +77,12 @@ export default {
   },
 
   async created() {
+    if (this.loaded) {
+      this.$emit("load");
+      if (!this.refresh) {
+        return;
+      }
+    }
     await this.reload();
   }
 };

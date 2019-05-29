@@ -189,9 +189,12 @@ a {
 
   font: inherit;
   width: 200px;
+  text-indent: 4px;
   background: $background;
   border: none;
   border-bottom: 2px dotted $foreground;
+  border-radius: 0;
+  padding: 1px;
   
   &::placeholder {
     color: $disabled;
@@ -226,6 +229,16 @@ a {
   }
 
   &-enter-active, &-leave-active {
+    transition: opacity 0.3s;
+  }
+}
+
+.fade-out {
+  &-leave-to {
+    opacity: 0;
+  }
+
+  &-leave-active {
     transition: opacity 0.3s;
   }
 }
