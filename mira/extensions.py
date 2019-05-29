@@ -1,5 +1,6 @@
 """This module defines global Flask extensions."""
 
+from flask_gzip import Gzip
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login.login_manager import LoginManager
@@ -26,6 +27,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 limiter = Limiter(app, key_func=get_remote_address)
+gzip = Gzip(app)
 csrf = SeaSurf(app)
 talisman = Talisman(
     app,
