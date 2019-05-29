@@ -43,5 +43,5 @@ export function makeDataURL(data) {
 }
 
 export function extractDataURL(dataURL) {
-    return dataURL.substr(dataURL.indexOf(",") + 1);
+  return dataURL.substr(dataURL.indexOf(",") + 1);
 }

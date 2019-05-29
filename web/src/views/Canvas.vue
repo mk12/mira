@@ -131,7 +131,12 @@ export default {
       }
       this.pendingSyncs++;
       let dataURL = this.canvas.toDataURL("image/png");
-      this.altContext.clearRect(0, 0, this.altCanvas.width, this.altCanvas.height);
+      this.altContext.clearRect(
+        0,
+        0,
+        this.altCanvas.width,
+        this.altCanvas.height
+      );
       this.altContext.drawImage(this.canvas, 0, 0);
       this.showAlt = true;
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -157,8 +162,8 @@ export default {
         x = event.clientX;
         y = event.clientY;
       } else {
-        x = event.changedTouches[event.changedTouches.length-1].clientX;
-        y = event.changedTouches[event.changedTouches.length-1].clientY;
+        x = event.changedTouches[event.changedTouches.length - 1].clientX;
+        y = event.changedTouches[event.changedTouches.length - 1].clientY;
       }
       return {
         x: parseInt(x - rect.left - canvas.clientLeft),
