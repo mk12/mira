@@ -1,6 +1,0 @@
-{
-  "name": "mira",
-  "scripts": {
-    "postinstall": "yarn --cwd web run build"
-  }
-}

@@ -19,6 +19,8 @@ db_dir="database"
 default_db_env=dev
 db_env_path="$db_dir/current"
 
+deploy_branch="prebuilt"
+
 cmd=dev
 port=
 verbose=false
@@ -59,6 +61,7 @@ commands:
     test        run api tests
     install     install development dependencies
     lint        format and lint code
+    deploy      deploy to heroku
     db:use      switch active db environment
     db:create   create database
     db:drop     delete database
@@ -183,6 +186,31 @@ EOS
     kill "$flask_pid"
     stop_db
     return $status
+}
+
+run_deploy() {
+    if ! git diff-index --quiet HEAD --; then
+        say "Working directory is not clean"
+        die "Please commit your changes and try again"
+    fi
+    branch=$(git rev-parse --abbrev-ref HEAD)
+    if [[ "$branch" != "master" ]]; then
+        say "Current branch is $branch, not master"
+        die "Please switch to the master branch and try again"
+    fi
+    commit=$(git rev-parse --verify HEAD)
+    say "Switching to branch $deploy_branch"
+    git branch -f "$deploy_branch"
+    git checkout "$deploy_branch"
+    say "Building the vue app for production"
+    yarn_do run build
+    say "Committing build files"
+    git add --all -f dist/
+    git commit -m "Deploy of $commit"
+    say "Deploying to heroku"
+    git push heroku "+$deploy_branch:master"
+    say "Switching back to master"
+    git checkout master
 }
 
 install_deps() {
@@ -353,6 +381,7 @@ main() {
         test) run_test ;;
         install) install_deps ;;
         lint) lint_code ;;
+        deploy) run_deploy ;;
         db:use) use_db ;;
         db:create) create_db ;;
         db:drop) drop_db ;;
