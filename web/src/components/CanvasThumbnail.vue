@@ -94,6 +94,7 @@ export default {
 
   &__button {
     margin: 5px 0;
+    line-height: initial;
   }
 }
 

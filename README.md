@@ -49,9 +49,14 @@ Check out `./run.sh -h` to see what else the script can do.
 
 Use `./run.sh prod` to serve the site as it would be in production. In particular, this calls `yarn run build` to build the Vue app into static bundles and then serves the Flask app using [Waitress][].
 
-This repository is already set up to be deployed on [Heroku][], so you can easily fork it and run your own instance.
+To deploy Mira on [Heroku][], follow these steps:
 
-_TODO: Explain other steps if there turn out to be any (secret key, migrations)._
+1. Sign into Heroku and create a new app.
+2. In the "Resources" tab, add the free PostgreSQL add-on.
+3. In the "Settings" tab, set the environment variable `FLASK_SECRET_KEY` to something secret.
+4. Clone this repo and run `heroku git:remote -a NAME` where `NAME` is your Heroku app name.
+5. Run `./run.sh deploy` on your local machine.
+6. _TODO: explain initial migration._
 
 ## Why "Mira"?
 
