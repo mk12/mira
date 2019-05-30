@@ -17,6 +17,7 @@
 <script>
 import { mapState } from "vuex";
 
+import { LOAD_REFRESH_TIME } from "@/constants";
 import { genericErrorMessage, neutralMessage } from "@/util";
 
 import StatusMessage from "@/components/StatusMessage.vue";
@@ -33,6 +34,10 @@ export default {
     refresh: {
       type: Boolean,
       default: true
+    },
+    period: {
+      type: Number,
+      default: LOAD_REFRESH_TIME
     },
     handleError: {
       type: Function,
@@ -73,6 +78,16 @@ export default {
       if (this.loaded) {
         this.$emit("load");
       }
+    },
+
+    onFocus() {
+      clearInterval(this.interval);
+      this.interval = setInterval(this.reload, this.period);
+      this.reload();
+    },
+
+    onBlur() {
+      clearInterval(this.interval);
     }
   },
 
@@ -84,6 +99,17 @@ export default {
       }
     }
     await this.reload();
+    if (this.refresh && this.period > 0) {
+      this.interval = setInterval(this.reload, this.period);
+      window.addEventListener("focus", this.onFocus);
+      window.addEventListener("blur", this.onBlur);
+    }
+  },
+
+  beforeDestroy() {
+    clearInterval(this.interval);
+    window.removeEventListener("focus", this.onFocus);
+    window.removeEventListener("blur", this.onBlur);
   }
 };
 </script>

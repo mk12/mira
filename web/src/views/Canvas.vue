@@ -71,10 +71,12 @@ export default {
     this.idleTimeout = null;
     this.syncTimeout = null;
     this.pendingSyncs = 0;
+    this.changeVersion = 0;
+    this.syncVersion = 0;
   },
 
   async beforeRouteLeave(to, from, next) {
-    if (this.$store.getters["auth/isLoggedIn"]) {
+    if (this.changeVersion > this.syncVersion && this.$store.getters["auth/isLoggedIn"]) {
       await this.sync();
     }
     next();
@@ -82,6 +84,8 @@ export default {
 
   async beforeDestroy() {
     this.clearTimeouts();
+    window.removeEventListener("focus", this.onFocus);
+    window.removeEventListener("blur", this.onBlur);
   },
 
   data() {
@@ -112,6 +116,8 @@ export default {
       this.context = this.canvas.getContext("2d");
       this.altCanvas = this.$refs.altCanvas;
       this.altContext = this.altCanvas.getContext("2d");
+      window.addEventListener("focus", this.sync);
+      window.addEventListener("blur", this.clearTimeouts);
       await this.sync();
     },
 
@@ -137,6 +143,7 @@ export default {
         this.altCanvas.width,
         this.altCanvas.height
       );
+      let version = this.changeVersion;
       this.altContext.drawImage(this.canvas, 0, 0);
       this.showAlt = true;
       this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -150,6 +157,7 @@ export default {
         value: response.data
       });
       this.showAlt = false;
+      this.syncVersion = version;
       this.pendingSyncs--;
       this.syncTimeout = setTimeout(this.sync, PERIODIC_SYNC_TIME);
     },
@@ -173,11 +181,13 @@ export default {
 
     onMouseDown(event) {
       this.mouseDown = true;
+      this.changeVersion++;
       this.lastPosition = this.currentPosition(event);
     },
 
     onMouseUp() {
       this.mouseDown = false;
+      this.changeVersion++;
       this.startIdleTimeout();
     },
 
