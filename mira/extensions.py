@@ -1,6 +1,6 @@
 """This module defines global Flask extensions."""
 
-from flask_gzip import Gzip
+from flask_compress import Compress
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_login.login_manager import LoginManager
@@ -22,12 +22,11 @@ CONTENT_SECURITY_POLICY = {
     "style-src": "'self' fonts.googleapis.com *.gstatic.com",
 }
 
-
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
 limiter = Limiter(app, key_func=get_remote_address)
-gzip = Gzip(app)
+compress = Compress(app)
 csrf = SeaSurf(app)
 talisman = Talisman(
     app,

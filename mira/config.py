@@ -17,6 +17,13 @@ ENVIRONMENTS = {
         "CSRF_COOKIE_HTTPONLY": True,
         "REMEMBER_COOKIE_HTTPONLY": True,
         "SESSION_COOKIE_HTTPONLY": True,
+        "COMPRESS_MIMETYPES": [
+            "text/html",
+            "text/css",
+            "application/json",
+            "application/javascript",
+            "image/svg+xml",
+        ],
     },
     "development": {
         "DEBUG": True,

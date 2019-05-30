@@ -1,5 +1,5 @@
 flask ~= 1.0
-flask-gzip ~= 0.2
+flask-compress ~= 1.4
 flask-limiter ~= 1.0
 flask-login ~= 0.4
 flask-migrate ~= 2.4
