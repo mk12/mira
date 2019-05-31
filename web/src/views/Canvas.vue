@@ -1,7 +1,16 @@
 <template>
-  <LoadPage :resource="resource" :refresh="false" :handleError="handleError" @load="onLoad">
+  <LoadPage
+    :resource="resource"
+    :refresh="false"
+    :handleError="handleError"
+    @load="onLoad"
+  >
     <div class="top-banner">
-      <router-link class="subtle-link" :to="{ name: 'friend', params: { username } }">{{ username }}</router-link>
+      <router-link
+        class="subtle-link"
+        :to="{ name: 'friend', params: { username } }"
+        >{{ username }}</router-link
+      >
     </div>
     <transition name="cross-fade">
       <img
@@ -13,7 +22,7 @@
         :src="backgroundSrc"
         class="canvas-layer"
         style="z-index: 0;"
-      >
+      />
     </transition>
     <transition name="fade-out">
       <canvas
