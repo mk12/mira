@@ -38,8 +38,8 @@ STRANGER_STATE = "stranger"
 
 IMAGE_FORMAT = "PNG"
 THUMBNAIL_SIZE = 100, 100
-FADE_MULTIPLIER = 0.90
-FADE_PERIOD = timedelta(seconds=1)
+FADE_MULTIPLIER = 0.95
+FADE_PERIOD = timedelta(hours=1)
 
 
 class BaseModel(db.Model):
