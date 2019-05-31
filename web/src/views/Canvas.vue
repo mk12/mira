@@ -1,16 +1,7 @@
 <template>
-  <LoadPage
-    :resource="resource"
-    :refresh="false"
-    :handleError="handleError"
-    @load="onLoad"
-  >
+  <LoadPage :resource="resource" :refresh="false" :handleError="handleError" @load="onLoad">
     <div class="top-banner">
-      <router-link
-        class="subtle-link"
-        :to="{ name: 'friend', params: { username } }"
-        >{{ username }}</router-link
-      >
+      <router-link class="subtle-link" :to="{ name: 'friend', params: { username } }">{{ username }}</router-link>
     </div>
     <transition name="cross-fade">
       <img
@@ -22,7 +13,7 @@
         :src="backgroundSrc"
         class="canvas-layer"
         style="z-index: 0;"
-      />
+      >
     </transition>
     <transition name="fade-out">
       <canvas
@@ -43,9 +34,9 @@
       @mousedown="onMouseDown"
       @mouseup="onMouseUp"
       @mousemove="onMouseMove"
-      @touchstart.prevent="onMouseDown"
-      @touchend.prevent="onMouseUp"
-      @touchmove.prevent="onMouseMove"
+      @touchstart="onMouseDown"
+      @touchend="onMouseUp"
+      @touchmove="onMouseMove"
     ></canvas>
     <ColorPicker
       class="color-picker"
@@ -205,12 +196,20 @@ export default {
     },
 
     onMouseDown(event) {
+      if (event.changedTouches && event.changedTouches.length > 1) {
+        return;
+      }
+      event.preventDefault();
       this.mouseDown = true;
       this.changeVersion++;
       this.lastPosition = this.currentPosition(event);
     },
 
     onMouseUp() {
+      if (event.changedTouches && event.changedTouches.length > 1) {
+        return;
+      }
+      event.preventDefault();
       this.mouseDown = false;
       this.changeVersion++;
       this.startIdleTimeout();
@@ -220,6 +219,10 @@ export default {
       if (!this.mouseDown) {
         return;
       }
+      if (event.changedTouches && event.changedTouches.length > 1) {
+        return;
+      }
+      event.preventDefault();
       let position = this.currentPosition(event);
       let ctx = this.context;
       ctx.beginPath();

@@ -1,31 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-    <link rel="icon" type="image/png" sizes="32x32" href="<%= BASE_URL %>favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="<%= BASE_URL %>favicon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="<%= BASE_URL %>apple-touch-icon.png">
-    <link rel="manifest" href="<%= BASE_URL %>site.webmanifest">
-    <meta name="apple-mobile-web-app-title" content="Mira">
-    <meta name="application-name" content="Mira">
-    <meta name="theme-color" content="#fcfaed">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
-    <title>Mira</title>
-  </head>
-  <body>
-    <noscript>
-      <strong>We're sorry but Mira doesn't work properly without JavaScript enabled. Please enable it to continue.</strong>
-    </noscript>
-    <div id="app"></div>
-    <% if (process.env.NODE_ENV === "production") { %>
-      <script nonce="{{ csp_nonce() }}">
-        window.csrfToken = {{ csrf_token() | tojson }};
-        window.miraUsername = {{ username | tojson }};
-      </script>
-    <% } %>
-    <!-- built files will be auto injected -->
-  </body>
+  <link rel="icon" type="image/png" sizes="32x32" href="<%= BASE_URL %>favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="<%= BASE_URL %>favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="<%= BASE_URL %>apple-touch-icon.png">
+  <link rel="manifest" href="<%= BASE_URL %>site.webmanifest">
+  <meta name="apple-mobile-web-app-title" content="Mira">
+  <meta name="application-name" content="Mira">
+  <meta name="theme-color" content="#fcfaed">
+
+  <title>Mira</title>
+</head>
+
+<body>
+  <noscript>
+    <strong>We're sorry but Mira doesn't work properly without JavaScript enabled. Please enable it to
+      continue.</strong>
+  </noscript>
+  <div id="app"></div>
+  <% if (process.env.NODE_ENV === "production") { %>
+  <script nonce="{{ csp_nonce() }}">
+    window.csrfToken = {{ csrf_token() | tojson }};
+    window.miraUsername = {{ username | tojson }};
+  </script>
+  <% } %>
+  <!-- built files will be auto injected -->
+</body>
+
 </html>
