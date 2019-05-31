@@ -71,6 +71,16 @@ a {
   }
 }
 
+.subtle-link {
+  color: $subtle;
+  border: 0;
+
+  &:hover {
+    border: 0;
+    color: $action;
+  }
+}
+
 .button {
   @extend %outline;
 

@@ -7,24 +7,28 @@
       <nav class="container__navigation">
         <ul class="nav-list">
           <li class="nav-list__item">
-            <router-link to="/" class="nav-link">Home</router-link>
+            <router-link to="/" class="subtle-link">Home</router-link>
           </li>
           <template v-if="isLoggedIn">
             <li class="nav-list__item">
-              <router-link to="/settings" class="nav-link"
+              <router-link to="/settings" class="subtle-link"
                 >Settings</router-link
               >
             </li>
             <li class="nav-list__item">
-              <a href="#" class="nav-link" @click.prevent="logout">Log out</a>
+              <a href="#" class="subtle-link" @click.prevent="logout"
+                >Log out</a
+              >
             </li>
           </template>
           <template v-else>
             <li class="nav-list__item">
-              <router-link to="/signup" class="nav-link">Sign up</router-link>
+              <router-link to="/signup" class="subtle-link"
+                >Sign up</router-link
+              >
             </li>
             <li class="nav-list__item">
-              <router-link to="/login" class="nav-link">Log in</router-link>
+              <router-link to="/login" class="subtle-link">Log in</router-link>
             </li>
           </template>
         </ul>
@@ -90,16 +94,6 @@ export default {
   &__item {
     display: inline-block;
     margin: 15px;
-  }
-}
-
-.nav-link {
-  color: $subtle;
-  border: 0;
-
-  &:hover {
-    border: 0;
-    color: $action;
   }
 }
 

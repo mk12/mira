@@ -1,10 +1,8 @@
 <template>
-  <LoadPage
-    :resource="resource"
-    :refresh="false"
-    :handleError="handleError"
-    @load="onLoad"
-  >
+  <LoadPage :resource="resource" :refresh="false" :handleError="handleError" @load="onLoad">
+    <div class="top-banner">
+      <router-link class="subtle-link" :to="{ name: 'friend', params: { username } }">{{ username }}</router-link>
+    </div>
     <transition name="cross-fade">
       <img
         v-if="backgroundSrc"
@@ -15,7 +13,7 @@
         :src="backgroundSrc"
         class="canvas-layer"
         style="z-index: 0;"
-      />
+      >
     </transition>
     <transition name="fade-out">
       <canvas
@@ -40,6 +38,11 @@
       @touchend.prevent="onMouseUp"
       @touchmove.prevent="onMouseMove"
     ></canvas>
+    <ColorPicker
+      class="color-picker"
+      @changeColor="onChangeColor"
+      @changeBrushSize="onChangeBrushSize"
+    />
   </LoadPage>
 </template>
 
@@ -48,12 +51,14 @@ import api from "@/api";
 import { APP_SIZE, IDLE_SYNC_TIME, PERIODIC_SYNC_TIME } from "@/constants";
 import { errorStatus, extractDataURL, makeDataURL } from "@/util";
 
+import ColorPicker from "@/components/ColorPicker.vue";
 import LoadPage from "@/components/LoadPage.vue";
 
 export default {
   name: "Canvas",
 
   components: {
+    ColorPicker,
     LoadPage
   },
 
@@ -66,8 +71,8 @@ export default {
     this.appSize = APP_SIZE;
     this.mouseDown = false;
     this.lastPosition = {};
-    this.color = this.$route.query.color || "black";
-    this.lineWidth = parseInt(this.$route.query.width) || 3;
+    this.color = null;
+    this.lineWidth = null;
     this.idleTimeout = null;
     this.syncTimeout = null;
     this.pendingSyncs = 0;
@@ -76,7 +81,10 @@ export default {
   },
 
   async beforeRouteLeave(to, from, next) {
-    if (this.changeVersion > this.syncVersion && this.$store.getters["auth/isLoggedIn"]) {
+    if (
+      this.changeVersion > this.syncVersion &&
+      this.$store.getters["auth/isLoggedIn"]
+    ) {
       await this.sync();
     }
     next();
@@ -119,6 +127,14 @@ export default {
       window.addEventListener("focus", this.sync);
       window.addEventListener("blur", this.clearTimeouts);
       await this.sync();
+    },
+
+    onChangeColor(color) {
+      this.color = color.rgba.toRgbString();
+    },
+
+    onChangeBrushSize(size) {
+      this.lineWidth = size;
     },
 
     clearTimeouts() {
@@ -213,9 +229,24 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.top-banner {
+  position: absolute;
+  top: -50px;
+  left: 0;
+  right: 0;
+  text-align: center;
+}
+
 .canvas-layer {
   position: absolute;
   width: $app-size;
   height: $app-size;
+}
+
+.color-picker {
+  position: fixed;
+  z-index: 3;
+  top: 10px;
+  right: 10px;
 }
 </style>
