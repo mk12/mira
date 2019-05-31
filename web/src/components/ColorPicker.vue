@@ -117,6 +117,7 @@ export default {
       h: 0,
       s: 0,
       v: 0,
+      realH: 0,
       brushSize: history.size || DEFAULT_BRUSH_SIZE,
       colorsHistory: history.colors || [],
       colorSelected: ""
@@ -184,6 +185,7 @@ export default {
     } else {
       this.setColorValue(this.color);
     }
+    this.realH = this.rgb2hsv(this.rgba).h;
     this.setColorPos();
     this.setSizePos();
   },
@@ -361,6 +363,7 @@ export default {
         );
         const [r, g, b] = imgData.data;
         const { h } = this.rgb2hsv({ r, g, b });
+        this.realH = h;
         const color = this.hsv2rgb({ h, s: this.s, v: this.v });
         this.setColorValue(color);
         this.renderSaturation(
@@ -572,7 +575,7 @@ export default {
       };
     },
     hueCornerRgbaString() {
-      let { r, g, b } = this.hsv2rgb({ h: this.h, s: 1, v: 1 });
+      let { r, g, b } = this.hsv2rgb({ h: this.realH, s: 1, v: 1 });
       return `rgb(${[r, g, b].join(",")})`;
     }
   }
@@ -669,11 +672,9 @@ export default {
       position: relative;
       .color {
         position: absolute;
-        left: 0;
-        top: 0;
-        bottom: 0;
-        right: 0;
-        margin: auto;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
         clip-path: circle();
       }
     }

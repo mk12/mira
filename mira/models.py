@@ -38,8 +38,8 @@ STRANGER_STATE = "stranger"
 
 IMAGE_FORMAT = "PNG"
 THUMBNAIL_SIZE = 100, 100
-FADE_MULTIPLIER = 0.95
-FADE_PERIOD = timedelta(hours=1)
+FADE_MULTIPLIER = 0.90
+FADE_PERIOD = timedelta(seconds=1)
 
 
 class BaseModel(db.Model):
@@ -282,7 +282,8 @@ class Canvas(BaseModel):
             image = Image.open(BytesIO(new_data))
         else:
             image = Image.open(BytesIO(self.data))
-            blank = Image.new("RGBA", image.size, (0, 0, 0, 0))
+            blank = image.copy()
+            blank.putalpha(0)
             elapsed = now - self.last_fade
             if elapsed >= FADE_PERIOD:
                 num_periods = math.floor(elapsed / FADE_PERIOD)

@@ -12,4 +12,4 @@ export const PERIODIC_SYNC_TIME = 30000; // ms
 export const DEFAULT_BRUSH_COLOR = "#000000";
 export const DEFAULT_BRUSH_SIZE = 3; // px
 export const MIN_BRUSH_SIZE = 1; // px
-export const MAX_BRUSH_SIZE = 15; // px
+export const MAX_BRUSH_SIZE = 25; // px
