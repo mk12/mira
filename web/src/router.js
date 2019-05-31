@@ -1,6 +1,3 @@
-import Vue from "vue";
-import Router from "vue-router";
-
 import store from "@/store";
 
 import AddFriend from "@/views/AddFriend.vue";
@@ -13,29 +10,17 @@ import LogIn from "@/views/LogIn.vue";
 import NotFound from "@/views/NotFound.vue";
 import Settings from "@/views/Settings.vue";
 import SignUp from "@/views/SignUp.vue";
+import Vue from "vue";
+import Router from "vue-router";
 
 Vue.use(Router);
 
 let router = new Router({
   mode: "history",
   routes: [
-    {
-      path: "/",
-      name: "index",
-      component: Index
-    },
-    {
-      path: "/signup",
-      name: "signup",
-      component: SignUp,
-      props: true
-    },
-    {
-      path: "/login",
-      name: "login",
-      component: LogIn,
-      props: true
-    },
+    { path: "/", name: "index", component: Index },
+    { path: "/signup", name: "signup", component: SignUp, props: true },
+    { path: "/login", name: "login", component: LogIn, props: true },
     {
       path: "/settings",
       name: "settings",
@@ -74,11 +59,7 @@ let router = new Router({
       meta: { loginRequired: true },
       props: true
     },
-    {
-      path: "*",
-      name: "404",
-      component: NotFound
-    }
+    { path: "*", name: "404", component: NotFound }
   ]
 });
 
@@ -87,10 +68,7 @@ router.beforeEach((to, from, next) => {
     to.matched.some(record => record.meta.loginRequired) &&
     !store.getters["auth/isLoggedIn"]
   ) {
-    next({
-      path: "/login",
-      query: { redirect: to.fullPath }
-    });
+    next({ path: "/login", query: { redirect: to.fullPath } });
   } else {
     next();
   }

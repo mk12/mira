@@ -12,37 +12,51 @@
         @mousedown="toggle()"
       />
     </div>
-    <div v-if="!hidden" class="hu-color-picker" :style="{ width: totalWidth + 'px' }">
+    <div
+      v-if="!hidden"
+      class="hu-color-picker"
+      :style="{ width: totalWidth + 'px' }"
+    >
       <div class="color-set">
         <div ref="size" class="size" @mousedown="selectSize">
-          <canvas ref="canvasSize"/>
-          <div :style="slideSizeStyle" class="slide"/>
+          <canvas ref="canvasSize" />
+          <div :style="slideSizeStyle" class="slide" />
         </div>
         <div ref="saturation" class="saturation" @mousedown="selectSaturation">
-          <canvas ref="canvasSaturation"/>
-          <div :style="slideSaturationStyle" class="slide"/>
+          <canvas ref="canvasSaturation" />
+          <div :style="slideSaturationStyle" class="slide" />
         </div>
         <div ref="hue" class="hue" @mousedown="selectHue">
-          <canvas ref="canvasHue"/>
-          <div :style="slideHueStyle" class="slide"/>
+          <canvas ref="canvasHue" />
+          <div :style="slideHueStyle" class="slide" />
         </div>
       </div>
       <div :style="{ height: selectedColorHeight + 'px' }" class="color-show">
         <div class="show-circle">
-          <div :style="circleStyle" class="color"/>
+          <div :style="circleStyle" class="color" />
         </div>
         <div class="show">
-          <div :style="{ background: rgba.toRgbaString() }" class="color"/>
+          <div :style="{ background: rgba.toRgbaString() }" class="color" />
         </div>
       </div>
       <ul class="colors">
-        <li v-for="item in colorsDefault" :key="item" class="item" @click="selectColor(item)">
-          <div :style="{ background: item }" class="color"/>
+        <li
+          v-for="item in colorsDefault"
+          :key="item"
+          class="item"
+          @click="selectColor(item)"
+        >
+          <div :style="{ background: item }" class="color" />
         </li>
       </ul>
       <ul v-if="colorsHistory.length" class="colors history">
-        <li v-for="item in colorsHistory" :key="item" class="item" @click="selectColor(item)">
-          <div :style="{ background: item }" class="color"/>
+        <li
+          v-for="item in colorsHistory"
+          :key="item"
+          class="item"
+          @click="selectColor(item)"
+        >
+          <div :style="{ background: item }" class="color" />
         </li>
       </ul>
     </div>
